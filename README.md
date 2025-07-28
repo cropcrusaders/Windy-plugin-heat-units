@@ -4,7 +4,7 @@
 
 This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural planning and crop management. It integrates seamlessly with Windy.com's weather platform to provide farmers and agricultural professionals with essential heat unit data.
 
-Once published, you can load the plugin directly from https://www.windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json. If the URL returns a `NoSuchKey` error, the plugin has not been uploaded yet.
+Once published, you can load the plugin directly from https://windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json. If the URL returns a `NoSuchKey` error, the plugin has not been uploaded yet.
 
 ## Features
 
@@ -37,7 +37,7 @@ work consistently with the GitHub Actions workflow.
    ```bash
    npm start
    ```
-4. Open Windy Plugins and navigate to `https://www.windy-plugins.com/dev` to test the plugin.
+4. Open Windy Plugins and navigate to `https://windy-plugins.com/dev` to test the plugin.
    The official getting-started guide mentions a local server at
    `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
