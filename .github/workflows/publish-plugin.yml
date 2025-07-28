@@ -29,7 +29,6 @@ jobs:
 
       - name: Publish to Windy
         if: github.ref == 'refs/heads/main'
-        run: |
-          curl --fail -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' \
-            -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
-            -F "plugin_archive=@./windy-plugin-heat-units.tar"
+        env:
+          WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
+        run: npm run release
