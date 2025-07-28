@@ -39,7 +39,7 @@ work consistently with the GitHub Actions workflow.
    ```
 4. Open Windy Plugins and navigate to `https://www.windy-plugins.com/dev` to test the plugin.
    The official getting-started guide mentions a local server at
-   `https://localhost:9999/plugin.js`, but this project only compiles the
+   `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
 
 ### Production Deployment
