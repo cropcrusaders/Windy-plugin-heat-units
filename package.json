@@ -1,75 +1,75 @@
 {
-“name”: “windy-plugin-heat-units”,
-“version”: “1.0.1”,
-“description”: “Agricultural Heat Unit (Growing Degree Days) calculator and visualization plugin for Windy.com”,
-“main”: “dist/plugin.js”,
-“homepage”: “https://github.com/crop-crusaders/windy-plugin-heat-units#readme”,
-“repository”: {
-“type”: “git”,
-“url”: “https://github.com/crop-crusaders/windy-plugin-heat-units.git”
-},
-“bugs”: {
-“url”: “https://github.com/crop-crusaders/windy-plugin-heat-units/issues”
-},
-“scripts”: {
-“start”: “rollup -c –watch”,
-“build”: “rollup -c”,
-“build:prod”: “NODE_ENV=production rollup -c”,
-“test”: “echo "No tests specified yet" && exit 0”,
-“lint”: “eslint src –ext .ts,.js,.svelte”,
-“lint:fix”: “eslint src –ext .ts,.js,.svelte –fix”,
-“type-check”: “tsc –noEmit”,
-“clean”: “rm -rf dist/ windy-plugin-heat-units.tar”,
-“package”: “npm run clean && npm run build:prod && tar cf windy-plugin-heat-units.tar –exclude=‘windy-plugin-heat-units.tar’ –exclude=’.git’ –exclude=‘node_modules’ –exclude=‘src’ –exclude=’*.config.*’ –exclude=‘tsconfig.json’ .”,
-“prerelease”: “npm run lint && npm run type-check”,
-“release”: “bash -c ‘set -e; if [ -z "$WINDY_API_KEY" ]; then echo "❌ Error: WINDY_API_KEY is not set" && exit 1; fi; echo "🔍 Running pre-release checks…"; npm run prerelease; echo "🔨 Building plugin…"; npm run build:prod; echo "📦 Creating package…"; npm run package; echo "📊 Package size: $(stat -c%s windy-plugin-heat-units.tar 2>/dev/null || stat -f%z windy-plugin-heat-units.tar) bytes"; echo "📤 Uploading to Windy…"; response=$(curl -w "%{http_code}" -s -o /tmp/windy_response.json –fail-with-body -XPOST "https://www.windy-plugins.com/plugins/v1.0/upload" -H "x-windy-api-key: $WINDY_API_KEY" -F "plugin_archive=@./windy-plugin-heat-units.tar"); http_code="${response: -3}"; echo "📊 HTTP Status: $http_code"; if [ -f /tmp/windy_response.json ]; then echo "📋 Response:"; cat /tmp/windy_response.json; echo; fi; if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then echo "✅ Plugin uploaded successfully!"; rm -f /tmp/windy_response.json; else echo "❌ Upload failed with HTTP $http_code"; exit 1; fi’”,
-“dev”: “npm run start”
-},
-“keywords”: [
-“windy”,
-“plugin”,
-“agriculture”,
-“heat-units”,
-“growing-degree-days”,
-“farming”,
-“weather”,
-“crop-monitoring”,
-“agricultural-tools”,
-“gdd”,
-“temperature”,
-“climate”,
-“precision-agriculture”
-],
-“author”: {
-“name”: “crop-crusaders”,
-“url”: “https://github.com/crop-crusaders”
-},
-“license”: “MIT”,
-“engines”: {
-“node”: “>=18.0.0”,
-“npm”: “>=8.0.0”
-},
-“files”: [
-“dist/”,
-“README.md”,
-“LICENSE”
-],
-“devDependencies”: {
-“@rollup/plugin-commonjs”: “^26.0.3”,
-“@rollup/plugin-node-resolve”: “^15.3.0”,
-“@rollup/plugin-typescript”: “^12.1.1”,
-“@types/leaflet”: “^1.9.20”,
-“@typescript-eslint/eslint-plugin”: “^8.15.0”,
-“@typescript-eslint/parser”: “^8.15.0”,
-“eslint”: “^8.57.1”,
-“eslint-plugin-svelte”: “^2.46.0”,
-“leaflet”: “^1.9.4”,
-“rollup”: “^4.28.1”,
-“rollup-plugin-svelte”: “^7.2.4”,
-“svelte”: “^4.2.19”,
-“svelte-preprocess”: “^6.0.3”,
-“tslib”: “^2.8.1”,
-“typescript”: “^5.7.2”
-},
-“type”: “module”
+  "name": "windy-plugin-heat-units",
+  "version": "1.0.1",
+  "description": "Agricultural Heat Unit (Growing Degree Days) calculator and visualization plugin for Windy.com",
+  "main": "dist/plugin.js",
+  "homepage": "https://github.com/crop-crusaders/windy-plugin-heat-units#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crop-crusaders/windy-plugin-heat-units.git"
+  },
+  "bugs": {
+    "url": "https://github.com/crop-crusaders/windy-plugin-heat-units/issues"
+  },
+  "scripts": {
+    "start": "rollup -c --watch",
+    "build": "rollup -c",
+    "build:prod": "NODE_ENV=production rollup -c",
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "lint": "eslint src --ext .ts,.js,.svelte",
+    "lint:fix": "eslint src --ext .ts,.js,.svelte --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist/ windy-plugin-heat-units.tar",
+    "package": "npm run clean && npm run build:prod && tar cf windy-plugin-heat-units.tar --exclude='windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' --exclude='src' --exclude='*.config.*' --exclude='tsconfig.json' .",
+    "prerelease": "npm run lint && npm run type-check",
+    "release": "bash -c 'set -e; if [ -z \"$WINDY_API_KEY\" ]; then echo \"❌ Error: WINDY_API_KEY is not set\" && exit 1; fi; echo \"🔍 Running pre-release checks...\"; npm run prerelease; echo \"🔨 Building plugin...\"; npm run build:prod; echo \"📦 Creating package...\"; npm run package; echo \"📊 Package size: $(stat -c%s windy-plugin-heat-units.tar 2>/dev/null || stat -f%z windy-plugin-heat-units.tar) bytes\"; echo \"📤 Uploading to Windy...\"; response=$(curl -w \"%{http_code}\" -s -o /tmp/windy_response.json --fail-with-body -XPOST https://www.windy-plugins.com/plugins/v1.0/upload -H \"x-windy-api-key: $WINDY_API_KEY\" -F \"plugin_archive=@./windy-plugin-heat-units.tar\"); http_code=\"${response: -3}\"; echo \"📊 HTTP Status: $http_code\"; if [ -f /tmp/windy_response.json ]; then echo \"📋 Response:\"; cat /tmp/windy_response.json; echo; fi; if [ \"$http_code\" -ge 200 ] && [ \"$http_code\" -lt 300 ]; then echo \"✅ Plugin uploaded successfully!\"; rm -f /tmp/windy_response.json; else echo \"❌ Upload failed with HTTP $http_code\"; exit 1; fi'",
+    "dev": "npm run start"
+  },
+  "keywords": [
+    "windy",
+    "plugin",
+    "agriculture",
+    "heat-units",
+    "growing-degree-days",
+    "farming",
+    "weather",
+    "crop-monitoring",
+    "agricultural-tools",
+    "gdd",
+    "temperature",
+    "climate",
+    "precision-agriculture"
+  ],
+  "author": {
+    "name": "crop-crusaders",
+    "url": "https://github.com/crop-crusaders"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.3",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/leaflet": "^1.9.20",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-svelte": "^2.46.0",
+    "leaflet": "^1.9.4",
+    "rollup": "^4.28.1",
+    "rollup-plugin-svelte": "^7.2.2",
+    "svelte": "^4.2.19",
+    "svelte-preprocess": "^6.0.3",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.2"
+  },
+  "type": "module"
 }
