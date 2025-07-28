@@ -1,34 +1,93 @@
 name: Publish Windy Plugin
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+push:
+branches: [ main ]
+pull_request:
+branches: [ main ]
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+build-and-publish:
+runs-on: ubuntu-latest
+steps:
+- uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
+```
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: '18'
+      cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+  - name: Install dependencies
+    run: npm ci
 
-      - name: Build plugin
-        run: npm run build
+  - name: Build plugin
+    run: |
+      npm run build
+      if [ $? -ne 0 ]; then
+        echo "Build failed!"
+        exit 1
+      fi
 
-      - name: Create plugin archive
-        run: tar cf windy-plugin-heat-units.tar --exclude='./windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .
+  - name: Create plugin archive
+    run: |
+      tar cf windy-plugin-heat-units.tar --exclude='./windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .
+      if [ $? -ne 0 ]; then
+        echo "Archive creation failed!"
+        exit 1
+      fi
+      # Verify archive was created and has content
+      if [ ! -f windy-plugin-heat-units.tar ]; then
+        echo "Archive file was not created!"
+        exit 1
+      fi
+      archive_size=$(stat -c%s windy-plugin-heat-units.tar)
+      if [ "$archive_size" -lt 1000 ]; then
+        echo "Archive seems too small (${archive_size} bytes), something went wrong!"
+        exit 1
+      fi
+      echo "Archive created successfully (${archive_size} bytes)"
 
-      - name: Publish to Windy
-        if: github.ref == 'refs/heads/main'
-        env:
-          WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
-        run: npm run release
+  - name: Publish to Windy (Main branch only)
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
+    run: |
+      # Check if API key is set
+      if [ -z "$WINDY_API_KEY" ]; then
+        echo "Error: WINDY_API_KEY is not set in repository secrets!"
+        exit 1
+      fi
+      
+      # Upload with better error handling
+      echo "Uploading plugin to Windy..."
+      response=$(curl -w "%{http_code}" -s -o response.json --fail-with-body \
+        -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' \
+        -H "x-windy-api-key: $WINDY_API_KEY" \
+        -F 'plugin_archive=@./windy-plugin-heat-units.tar')
+      
+      http_code="${response: -3}"
+      echo "HTTP Status Code: $http_code"
+      
+      # Show response body
+      if [ -f response.json ]; then
+        echo "Response body:"
+        cat response.json
+      fi
+      
+      # Check if upload was successful
+      if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+        echo "✅ Plugin uploaded successfully!"
+      else
+        echo "❌ Upload failed with HTTP $http_code"
+        exit 1
+      fi
+
+  - name: Build summary (PR only)
+    if: github.event_name == 'pull_request'
+    run: |
+      echo "🔍 This is a pull request - plugin was built but not published"
+      echo "📦 Archive size: $(stat -c%s windy-plugin-heat-units.tar) bytes"
+      echo "🚀 Plugin will be published when merged to main branch"
+```
