@@ -49,6 +49,10 @@ work consistently with the GitHub Actions workflow.
 3. Push to the `main` branch. The GitHub Actions workflow automatically builds
    the plugin, packages it as `windy-plugin-heat-units.tar`, and uploads it over
    a secure HTTPS connection.
+4. To publish manually from your local machine, run:
+   ```bash
+   npm run release
+   ```
 
 ## Usage
 
