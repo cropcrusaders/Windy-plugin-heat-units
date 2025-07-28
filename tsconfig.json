@@ -14,10 +14,7 @@
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": ".",
-    "paths": {
-      "@windy/*": ["node_modules/@windy/interfaces/types/*"]
-    }
+    "baseUrl": "."
   },
   "include": [
     "src/**/*"
