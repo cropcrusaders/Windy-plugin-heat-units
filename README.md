@@ -19,7 +19,7 @@ This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/windy-plugin-heat-units.git
+   git clone https://github.com/crop-crusaders/windy-plugin-heat-units.git
    cd windy-plugin-heat-units
    ```
 2. Install dependencies:

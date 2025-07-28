@@ -15,7 +15,8 @@
     "growing-degree-days",
     "farming"
   ],
-  "author": "Agricultural Weather Solutions",
+  "author": "crop-crusaders",
+  "repository": "https://github.com/crop-crusaders/windy-plugin-heat-units",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
