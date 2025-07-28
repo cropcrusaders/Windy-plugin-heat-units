@@ -7,7 +7,7 @@
     "start": "rollup -c --watch",
     "build": "rollup -c",
     "package": "tar cf windy-plugin-heat-units.tar --exclude='windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .",
-    "release": "[ -z \"$WINDY_API_KEY\" ] && echo \"Error: WINDY_API_KEY is not set\" && exit 1 || (npm run build && npm run package && curl --fail -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' -H 'x-windy-api-key: $WINDY_API_KEY' -F 'plugin_archive=@./windy-plugin-heat-units.tar')"
+    "release": "[ -z \"$WINDY_API_KEY\" ] && echo \"Error: WINDY_API_KEY is not set\" && exit 1 || (npm run build && npm run package && curl --fail -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' -H \"x-windy-api-key: $WINDY_API_KEY\" -F 'plugin_archive=@./windy-plugin-heat-units.tar')"
   },
   "keywords": [
     "windy",
