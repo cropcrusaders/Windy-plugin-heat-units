@@ -1,4 +1,4 @@
-# Agricultural Heat Units Plugin for Windy.com
+# windy-plugin-heat-units
 
 ## Overview
 
@@ -46,7 +46,9 @@ work consistently with the GitHub Actions workflow.
 
 1. Get API key from https://api.windy.com/keys
 2. Add `WINDY_API_KEY` to your GitHub repository secrets
-3. Push to main branch - GitHub Actions will automatically build and deploy
+3. Push to the `main` branch. The GitHub Actions workflow automatically builds
+   the plugin, packages it as `windy-plugin-heat-units.tar`, and uploads it over
+   a secure HTTPS connection.
 
 ## Usage
 

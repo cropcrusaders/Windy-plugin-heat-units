@@ -25,11 +25,11 @@ jobs:
         run: npm run build
 
       - name: Create plugin archive
-        run: tar cf plugin.tar --exclude='./plugin.tar' --exclude='.git' --exclude='node_modules' .
+        run: tar cf windy-plugin-heat-units.tar --exclude='./windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .
 
       - name: Publish to Windy
         if: github.ref == 'refs/heads/main'
         run: |
-          curl -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' \
+          curl --fail --proto '=https' -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' \
             -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
-            -F "plugin_archive=@./plugin.tar"
+            -F "plugin_archive=@./windy-plugin-heat-units.tar"
