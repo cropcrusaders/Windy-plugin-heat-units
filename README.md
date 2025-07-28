@@ -51,8 +51,12 @@ work consistently with the GitHub Actions workflow.
    a secure HTTPS connection.
 4. To publish manually from your local machine, run:
    ```bash
+   export WINDY_API_KEY=<your_key>
    npm run release
    ```
+   The `npm run release` script invokes `curl` with the `x-windy-api-key` header
+   and uploads `windy-plugin-heat-units.tar`. If the API key is missing or
+   invalid, the upload request will fail with `403 Forbidden`.
 
 ## Usage
 
