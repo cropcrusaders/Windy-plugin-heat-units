@@ -30,6 +30,6 @@ jobs:
       - name: Publish to Windy
         if: github.ref == 'refs/heads/main'
         run: |
-          curl -XPOST 'https://node.windy.com/plugins/v1.0/upload' \
+          curl -XPOST 'https://www.windy-plugins.com/plugins/v1.0/upload' \
             -H "x-windy-api-key: ${{ secrets.WINDY_API_KEY }}" \
             -F "plugin_archive=@./plugin.tar"

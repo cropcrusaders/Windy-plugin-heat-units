@@ -1,6 +1,6 @@
 {
   "name": "windy-plugin-heat-units",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Agricultural Heat Unit (Growing Degree Days) calculator and visualization plugin for Windy.com",
   "main": "dist/plugin.js",
   "scripts": {

@@ -4,6 +4,8 @@
 
 This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural planning and crop management. It integrates seamlessly with Windy.com's weather platform to provide farmers and agricultural professionals with essential heat unit data.
 
+Once published, you can load the plugin directly from [https://www.windy-plugins.com/plugins/heat-units](https://www.windy-plugins.com/plugins/heat-units).
+
 ## Features
 
 - **Real-time GDD calculation** for any location on the map
@@ -30,7 +32,7 @@ This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural
    ```bash
    npm start
    ```
-4. Open Windy.com and navigate to `https://www.windy.com/dev` to test the plugin
+4. Open Windy Plugins and navigate to `https://www.windy-plugins.com/dev` to test the plugin
 
 ### Production Deployment
 
