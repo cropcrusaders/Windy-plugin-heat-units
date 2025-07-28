@@ -7,7 +7,9 @@
     "start": "rollup -c --watch",
     "build": "rollup -c",
     "package": "tar cf windy-plugin-heat-units.tar --exclude='windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "test:release": "OFFLINE_MODE=true node scripts/release.js",
+    "validate": "node scripts/validate.js"
   },
   "keywords": [
     "windy",

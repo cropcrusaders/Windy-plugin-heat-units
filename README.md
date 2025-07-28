@@ -42,6 +42,15 @@ work consistently with the GitHub Actions workflow.
    `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
 
+### Development Commands
+
+- `npm start` - Watch mode for development
+- `npm run build` - Build the plugin once
+- `npm run validate` - Validate plugin structure and build output
+- `npm run test:release` - Test the release process without uploading
+- `npm run package` - Create the plugin package (.tar file)
+- `npm run release` - Full release process (requires WINDY_API_KEY)
+
 ### Production Deployment
 
 1. Get API key from https://api.windy.com/keys
