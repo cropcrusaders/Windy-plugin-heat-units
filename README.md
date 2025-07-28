@@ -28,11 +28,14 @@ Once published, you can load the plugin directly from [https://www.windy-plugins
    ```bash
    npm install
    ```
-3. Start development server:
+3. Start the build watcher:
    ```bash
    npm start
    ```
-4. Open Windy Plugins and navigate to `https://www.windy-plugins.com/dev` to test the plugin
+4. Open Windy Plugins and navigate to `https://www.windy-plugins.com/dev` to test the plugin.
+   The official getting-started guide mentions a local server at
+   `https://localhost:9999/plugin.js`, but this project only compiles the
+   plugin; it does not start a web server.
 
 ### Production Deployment
 
