@@ -9,6 +9,7 @@ export default {
   output: {
     file: 'dist/plugin.js',
     format: 'iife',
+    exports: 'named',
     name: 'windyPluginHeatUnits',
     globals: {
       leaflet: 'L'
