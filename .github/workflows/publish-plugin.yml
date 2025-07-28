@@ -7,13 +7,14 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-publish:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -24,11 +25,67 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      - name: Create plugin archive
-        run: tar cf windy-plugin-heat-units.tar --exclude='./windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .
+      - name: Verify build output
+        run: |
+          if [ ! -f "dist/plugin.js" ]; then
+            echo "❌ Build failed: dist/plugin.js not found"
+            exit 1
+          fi
+          echo "✅ Build successful: dist/plugin.js created"
+          ls -la dist/
+
+      - name: Test packaging
+        run: npm run package
+
+      - name: Verify package
+        run: |
+          if [ ! -f "windy-plugin-heat-units.tar" ]; then
+            echo "❌ Packaging failed: windy-plugin-heat-units.tar not found"
+            exit 1
+          fi
+          echo "✅ Package created successfully"
+          tar -tf windy-plugin-heat-units.tar | head -10
+
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check API key
+        env:
+          WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
+        run: |
+          if [ -z "$WINDY_API_KEY" ]; then
+            echo "❌ Error: WINDY_API_KEY secret is not set"
+            echo "Please add your Windy API key to repository secrets"
+            exit 1
+          fi
+          echo "✅ API key is configured"
 
       - name: Publish to Windy
-        if: github.ref == 'refs/heads/main'
         env:
           WINDY_API_KEY: ${{ secrets.WINDY_API_KEY }}
         run: npm run release
+
+      - name: Upload build artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            dist/
+            *.tar
+            package.json
+            plugin.json

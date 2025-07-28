@@ -46,17 +46,30 @@ work consistently with the GitHub Actions workflow.
 
 1. Get API key from https://api.windy.com/keys
 2. Add `WINDY_API_KEY` to your GitHub repository secrets
-3. Push to the `main` branch. The GitHub Actions workflow automatically builds
-   the plugin, packages it as `windy-plugin-heat-units.tar`, and uploads it over
-   a secure HTTPS connection.
-4. To publish manually from your local machine, run:
+3. Push to the `main` branch. The GitHub Actions workflow automatically:
+   - Builds and tests the plugin
+   - Creates the plugin package
+   - Uploads to Windy using multiple API endpoint fallbacks
+   - Provides detailed logging for troubleshooting
+
+4. To publish manually from your local machine:
    ```bash
    export WINDY_API_KEY=<your_key>
    npm run release
    ```
-   The `npm run release` script invokes `curl` with the `x-windy-api-key` header
-   and uploads `windy-plugin-heat-units.tar`. If the API key is missing or
-   invalid, the upload request will fail with `403 Forbidden`.
+   
+   The release script will:
+   - Validate your environment and API key
+   - Build the plugin with TypeScript and Rollup
+   - Package it as `windy-plugin-heat-units.tar`
+   - Try multiple API endpoints for maximum reliability
+   - Provide detailed error messages if upload fails
+
+**Troubleshooting Upload Issues:**
+- Verify your API key is correct and has plugin upload permissions
+- Check GitHub Actions logs for detailed error messages
+- The script tries multiple API endpoints automatically
+- Network issues are retried with exponential backoff
 
 ## Usage
 
