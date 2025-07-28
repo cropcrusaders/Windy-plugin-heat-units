@@ -1,4 +1,4 @@
-import type { PluginDataLoader } from '@windy/interfaces';
+import type { PluginDataLoader } from './windyInterfaces';
 import config from './pluginConfig';
 
 /**

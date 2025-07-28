@@ -1,4 +1,4 @@
-import type { ExternalPluginConfig } from '@windy/interfaces';
+import type { ExternalPluginConfig } from './windyInterfaces';
 
 const config: ExternalPluginConfig = {
   name: 'windy-plugin-heat-units',
