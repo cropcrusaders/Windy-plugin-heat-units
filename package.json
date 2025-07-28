@@ -1,0 +1,24 @@
+{
+  "name": "windy-plugin-heat-units",
+  "version": "1.0.0",
+  "description": "Agricultural Heat Unit (Growing Degree Days) calculator and visualization plugin for Windy.com",
+  "main": "dist/plugin.js",
+  "scripts": {
+    "start": "rollup -c --watch",
+    "build": "rollup -c"
+  },
+  "keywords": ["windy", "plugin", "agriculture", "heat-units", "growing-degree-days", "farming"],
+  "author": "Agricultural Weather Solutions",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@windy/interfaces": "^0.0.1",
+    "rollup": "^3.0.0",
+    "rollup-plugin-svelte": "^7.0.0",
+    "svelte": "^4.0.0",
+    "tslib": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
