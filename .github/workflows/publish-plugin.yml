@@ -73,10 +73,16 @@ jobs:
           http_code="${response: -3}"
           echo "HTTP Status Code: $http_code"
 
-          # Show response body
+          # Show response body if available
           if [ -f response.json ]; then
             echo "Response body:"
             cat response.json
+          fi
+
+          # Detect proxy blocking
+          if [ "$http_code" = "403" ] && grep -q "Method forbidden" response.json; then
+            echo "Upload blocked by network policy. Please run from an allowed environment."
+            exit 1
           fi
 
           # Check if upload was successful

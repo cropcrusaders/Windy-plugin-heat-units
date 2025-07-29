@@ -57,6 +57,10 @@ work consistently with the GitHub Actions workflow.
    The `npm run release` script invokes `curl` with the `x-windy-api-key` header
    and uploads `windy-plugin-heat-units.tar`. If the API key is missing or
    invalid, the upload request will fail with `403 Forbidden`.
+   
+   **Note:** Some networks block POST requests to `windy-plugins.com`. If the
+   upload fails with `Method forbidden`, run the release from a network that
+   allows outbound HTTPS POST to that domain.
 
 ## Usage
 
