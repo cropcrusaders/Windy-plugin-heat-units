@@ -18,7 +18,7 @@
 #include <string>
 
 // Stage 1 includes (assuming previous code)
-// #include "atmospheric_lbm_stage1.hpp"
+#include "atmospheric_lbm_stage1.hpp"
 
 // ==============================================================================
 // Enhanced Data Structures for Stage 2
