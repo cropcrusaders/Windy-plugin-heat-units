@@ -662,10 +662,24 @@ private:
 
     std::string get_stage1_kernels() const {
         return R"(
-        // Basic Stage 1 kernels would go here
-        // streaming_step, collision_step, etc.
-        // [Previous Stage 1 kernel code]
-    )";
+        __kernel void streaming_step(__global float* f_in, __global float* f_out, int nx, int ny, int nz) {
+            int x = get_global_id(0);
+            int y = get_global_id(1);
+            int z = get_global_id(2);
+            if (x < nx && y < ny && z < nz) {
+                // Perform streaming step logic here
+            }
+        }
+
+        __kernel void collision_step(__global float* f_in, __global float* f_out, __global float* density, __global float* velocity, int nx, int ny, int nz) {
+            int x = get_global_id(0);
+            int y = get_global_id(1);
+            int z = get_global_id(2);
+            if (x < nx && y < ny && z < nz) {
+                // Perform collision step logic here
+            }
+        }
+        )";
     }
 
     bool load_terrain_data() {
