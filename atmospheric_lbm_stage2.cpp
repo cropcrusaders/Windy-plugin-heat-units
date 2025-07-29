@@ -370,7 +370,6 @@ public:
 
             float dtheta_dz = (theta_up - theta_down) / (2.0f * dz);
 
-            float g = 9.81f;
             brunt_vaisala[gid] = (g / theta_center) * dtheta_dz;
         }
 
