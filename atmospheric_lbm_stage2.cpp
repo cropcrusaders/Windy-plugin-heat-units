@@ -3,7 +3,6 @@
 // Advanced atmospheric boundary layer, terrain effects, and surface physics
 // ==============================================================================
 
-#pragma once
 #include <CL/cl.hpp>
 #include <iostream>
 #include <vector>
