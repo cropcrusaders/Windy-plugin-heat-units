@@ -80,9 +80,16 @@ jobs:
           fi
 
           # Detect proxy blocking
-          if [ "$http_code" = "403" ] && grep -q "Method forbidden" response.json; then
-            echo "Upload blocked by network policy. Please run from an allowed environment."
-            exit 1
+          if [ "$http_code" = "403" ]; then
+            if [ -f response.json ]; then
+              if grep -q "Method forbidden" response.json; then
+                echo "Upload blocked by network policy. Please run from an allowed environment."
+                exit 1
+              fi
+            else
+              echo "Error: response.json not found. Unable to check for proxy blocking."
+              exit 1
+            fi
           fi
 
           # Check if upload was successful
