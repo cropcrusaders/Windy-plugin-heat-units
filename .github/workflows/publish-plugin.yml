@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Build plugin
         run: |
           npm run build
@@ -102,6 +105,9 @@ jobs:
           # Check if upload was successful
           if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
             echo "✅ Plugin uploaded successfully!"
+            plugin_name=$(jq -r '.name' plugin.json)
+            plugin_url="https://windy-plugins.com/plugins/${plugin_name}/plugin.json"
+            echo "Plugin URL: $plugin_url"
           else
             echo "❌ Upload failed with HTTP $http_code"
             exit 1
@@ -113,3 +119,5 @@ jobs:
           echo "🔍 This is a pull request - plugin was built but not published"
           echo "📦 Archive size: $(stat -c%s windy-plugin-heat-units.tar) bytes"
           echo "🚀 Plugin will be published when merged to main branch"
+          plugin_name=$(jq -r '.name' plugin.json)
+          echo "ℹ️ Expected URL after publish: https://windy-plugins.com/plugins/${plugin_name}/plugin.json"
