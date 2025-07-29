@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_RUNNER_DEBUG: 'true'
+      ACTIONS_STEP_DEBUG: 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +64,8 @@ jobs:
 
           # Upload with better error handling
           echo "Uploading plugin to Windy..."
-          response=$(curl -L -w "%{http_code}" -s -o response.json --fail-with-body \
+          set -x
+          response=$(curl -v -L -w "%{http_code}" -o response.json --fail-with-body \
             -XPOST 'https://windy-plugins.com/plugins/v1.0/upload' \
             -H "x-windy-api-key: $WINDY_API_KEY" \
             -F 'plugin_archive=@./windy-plugin-heat-units.tar')
