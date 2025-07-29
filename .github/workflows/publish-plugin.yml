@@ -68,13 +68,16 @@ jobs:
           # Upload with better error handling
           echo "Uploading plugin to Windy..."
           set -x
+          set +e
           response=$(curl -v -L -w "%{http_code}" -o response.json --fail-with-body \
             -XPOST 'https://node.windy.com/plugins/v1.0/upload' \
             -H "x-windy-api-key: $WINDY_API_KEY" \
             -F 'plugin_archive=@./windy-plugin-heat-units.tar')
-
+          curl_exit=$?
+          set -e
           http_code="${response: -3}"
           echo "HTTP Status Code: $http_code"
+          echo "curl exit code: $curl_exit"
 
           # Show response body if available
           if [ -f response.json ]; then
