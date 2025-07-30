@@ -8,12 +8,7 @@ export default {
   input: 'src/plugin.ts',
   output: {
     file: 'dist/plugin.js',
-    format: 'iife',
-    exports: 'named',
-    name: 'windyPluginHeatUnits',
-    globals: {
-      leaflet: 'L'
-    },
+    format: 'es',
     inlineDynamicImports: true
   },
   plugins: [
