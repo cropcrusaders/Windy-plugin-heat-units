@@ -10,6 +10,12 @@
   let picker: any;
   let store: any;
   let broadcast: any;
+  let windyReady = false;
+  let windyStatus = 'Initializing…';
+  let windyError = '';
+  let windyInitTimer: ReturnType<typeof setInterval> | null = null;
+  let windyInitAttempts = 0;
+  const MAX_WINDY_ATTEMPTS = 40;
 
   // Component state
   let mode: 'heat-units' | 'tornado' = 'heat-units';
@@ -27,21 +33,60 @@
   let tornadoForecastHours = 48;
 
   // Initialize Windy API access
-  onMount(async () => {
-    // Wait for Windy API to be available
-    if (window.W) {
-      map = window.W.map;
-      picker = window.W.picker;
-      store = window.W.store;
-      broadcast = window.W.broadcast;
+  onMount(() => {
+    const tryInitializeWindy = () => {
+      const windy = (window as any).W;
+      if (!windy) {
+        return false;
+      }
 
-      // Listen for map clicks
-      map.on('click', handleMapClick);
+      initializeWindyApi(windy);
+      return true;
+    };
 
-      // Listen for picker changes
-      broadcast.on('pickerOpened', handlePickerOpened);
+    if (!tryInitializeWindy()) {
+      windyStatus = 'Waiting for the Windy map to initialize…';
+      windyInitTimer = setInterval(() => {
+        windyInitAttempts += 1;
+        if (tryInitializeWindy()) {
+          return;
+        }
+
+        if (windyInitAttempts >= MAX_WINDY_ATTEMPTS) {
+          windyError = 'Unable to connect to the Windy API. Try reloading the plugin.';
+          windyStatus = 'Windy API not available.';
+          if (windyInitTimer) {
+            clearInterval(windyInitTimer);
+            windyInitTimer = null;
+          }
+        }
+      }, 500);
     }
   });
+
+  function initializeWindyApi(windy: any) {
+    windyReady = true;
+    windyStatus = 'Connected to the Windy map.';
+    windyError = '';
+
+    map = windy.map;
+    picker = windy.picker;
+    store = windy.store;
+    broadcast = windy.broadcast;
+
+    if (windyInitTimer) {
+      clearInterval(windyInitTimer);
+      windyInitTimer = null;
+    }
+
+    if (map) {
+      map.on('click', handleMapClick);
+    }
+
+    if (broadcast) {
+      broadcast.on('pickerOpened', handlePickerOpened);
+    }
+  }
 
   onDestroy(() => {
     if (map) {
@@ -49,6 +94,10 @@
     }
     if (broadcast) {
       broadcast.off('pickerOpened', handlePickerOpened);
+    }
+    if (windyInitTimer) {
+      clearInterval(windyInitTimer);
+      windyInitTimer = null;
     }
     if (heatMapLayer) {
       map.removeLayer(heatMapLayer);
@@ -280,6 +329,14 @@
     <p>Growing Degree Days & Severe Weather Toolkit</p>
   </header>
 
+  <p
+    class="status"
+    class:status--ready={windyReady}
+    class:status--error={!!windyError}
+  >
+    {windyError ? windyError : windyStatus}
+  </p>
+
   <div class="mode-toggle">
     <button
       class:active={mode === 'heat-units'}
@@ -338,7 +395,7 @@
         </select>
       </div>
 
-      <button class="overlay-toggle" on:click={toggleOverlay} type="button">
+      <button class="overlay-toggle" on:click={toggleOverlay} type="button" disabled={!windyReady}>
         {heatMapLayer ? 'Hide' : 'Show'} Heat Map
       </button>
     {:else}
@@ -362,7 +419,7 @@
         <p class="control-hint">Uses CAPE, wind shear, and helicity from forecast data.</p>
       </div>
 
-      <button class="overlay-toggle" on:click={toggleOverlay} type="button">
+      <button class="overlay-toggle" on:click={toggleOverlay} type="button" disabled={!windyReady}>
         {tornadoLayer ? 'Hide' : 'Show'} Tornado Risk Overlay
       </button>
     {/if}
@@ -528,6 +585,26 @@
     font-size: 0.9rem;
   }
 
+  .status {
+    margin: 0 0 12px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #f1f2f6;
+    color: #2f3542;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+  }
+
+  .status--ready {
+    background: #e8f9ef;
+    color: #216c2a;
+  }
+
+  .status--error {
+    background: #fdecea;
+    color: #b00020;
+  }
+
   .mode-toggle {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -616,6 +693,14 @@
   .overlay-toggle:hover {
     background: linear-gradient(135deg, #2980b9, #1f5f99);
     transform: translateY(-1px);
+  }
+
+  .overlay-toggle:disabled {
+    background: #b2bec3;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.8;
   }
 
   .location-info {
