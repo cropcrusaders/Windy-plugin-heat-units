@@ -26,3 +26,31 @@ export interface CalculationSettings {
   endDate: Date;
   method: 'simple' | 'modified' | 'double-sine';
 }
+
+export interface TornadoRiskTimelinePoint {
+  hourOffset: number;
+  riskIndex: number;
+  probability: number;
+}
+
+export interface TornadoRiskData {
+  lat: number;
+  lon: number;
+  forecastHours: number;
+  riskIndex: number;
+  probability: number;
+  summary: string;
+  parameters: {
+    cape: number;
+    shear: number;
+    helicity: number;
+  };
+  timeline: TornadoRiskTimelinePoint[];
+}
+
+export interface TornadoRiskMapPoint {
+  lat: number;
+  lon: number;
+  riskIndex: number;
+  probability: number;
+}

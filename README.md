@@ -15,6 +15,7 @@ If that URL returns a `NoSuchKey` error, the upload may not have completed or it
 - **Interactive heat map overlay** showing regional GDD distribution
 - **Crop development stage tracking** and harvest timing estimates
 - **Historical analysis** with configurable time periods
+- **Forecast-based tornado outlook** with map overlay and risk timeline
 
 ## Installation
 
@@ -68,8 +69,8 @@ work consistently with the GitHub Actions workflow.
 1. **Select Location**: Click anywhere on the Windy map
 2. **Choose Crop**: Select from preset crops or use custom settings
 3. **Configure Parameters**: Adjust base temperature, upper threshold, and calculation method
-4. **View Results**: Analyze accumulated GDD, crop development stage, and harvest timing
-5. **Heat Map**: Toggle regional heat map overlay for area-wide analysis
+4. **Tornado Outlook (Optional)**: Switch to the tornado mode to review forecast risk ingredients and probability
+5. **View Results**: Analyze accumulated GDD, crop development stage, tornado risk timeline, and map overlays
 
 ## Supported Crops
 
