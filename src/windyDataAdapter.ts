@@ -1,4 +1,4 @@
-import type { HeatUnitData } from './types';
+import type { HeatUnitData, TornadoRiskData, TornadoRiskMapPoint, TornadoRiskTimelinePoint } from './types';
 
 export class WindyDataAdapter {
   /**
@@ -129,5 +129,148 @@ export class WindyDataAdapter {
     }
 
     return data;
+  }
+
+  static async getTornadoRiskData(lat: number, lon: number, forecastHours: number = 48): Promise<TornadoRiskData> {
+    try {
+      const baseParameters = this.computeTornadoParameters(lat, lon);
+      const riskIndex = this.calculateRiskIndex(baseParameters, forecastHours);
+      const probability = this.calculateProbability(riskIndex);
+      const timeline = this.generateTornadoTimeline(lat, lon, forecastHours, baseParameters);
+
+      return {
+        lat,
+        lon,
+        forecastHours,
+        riskIndex,
+        probability,
+        summary: this.getRiskSummary(riskIndex),
+        parameters: baseParameters,
+        timeline,
+      };
+    } catch (error) {
+      console.error('Error fetching tornado risk data:', error);
+      throw error;
+    }
+  }
+
+  static async generateTornadoRiskOverlay(bounds: any, forecastHours: number = 48): Promise<{bounds: any; points: TornadoRiskMapPoint[]}> {
+    return {
+      bounds,
+      points: this.generateTornadoRiskGrid(bounds, forecastHours),
+    };
+  }
+
+  private static generateTornadoRiskGrid(bounds: any, forecastHours: number): TornadoRiskMapPoint[] {
+    const gridSize = 18;
+    const latStep = (bounds.north - bounds.south) / gridSize;
+    const lonStep = (bounds.east - bounds.west) / gridSize;
+    const points: TornadoRiskMapPoint[] = [];
+
+    for (let i = 0; i <= gridSize; i++) {
+      for (let j = 0; j <= gridSize; j++) {
+        const lat = bounds.south + i * latStep;
+        const lon = bounds.west + j * lonStep;
+        const params = this.computeTornadoParameters(lat, lon);
+        const variance = (this.pseudoRandom(lat, lon, forecastHours) - 0.5) * 2.5;
+        const riskIndex = this.calculateRiskIndex(params, forecastHours, variance);
+        const probability = this.calculateProbability(riskIndex);
+
+        points.push({
+          lat,
+          lon,
+          riskIndex,
+          probability,
+        });
+      }
+    }
+
+    return points;
+  }
+
+  private static computeTornadoParameters(lat: number, lon: number) {
+    const cape = 500 + this.pseudoRandom(lat, lon, 1) * 2500;
+    const shear = 8 + Math.abs(this.pseudoRandom(lat, lon, 2)) * 45;
+    const helicity = 60 + this.pseudoRandom(lat, lon, 3) * 260;
+
+    return {
+      cape: Math.round(cape),
+      shear: Math.round(shear * 10) / 10,
+      helicity: Math.round(helicity),
+    };
+  }
+
+  private static calculateRiskIndex(
+    parameters: { cape: number; shear: number; helicity: number },
+    forecastHours: number,
+    variance: number = 0
+  ): number {
+    const capeScore = Math.min(1, parameters.cape / 3000);
+    const shearScore = Math.min(1, parameters.shear / 40);
+    const helicityScore = Math.min(1, parameters.helicity / 350);
+
+    let baseRisk = (capeScore * 0.5 + shearScore * 0.3 + helicityScore * 0.2) * 10;
+    baseRisk += Math.min(2, (forecastHours / 72));
+    baseRisk = baseRisk + variance;
+
+    return Math.round(Math.max(0, Math.min(10, baseRisk)) * 10) / 10;
+  }
+
+  private static calculateProbability(riskIndex: number): number {
+    const probability = Math.min(0.98, Math.max(0.03, (riskIndex / 10) * 0.92 + 0.04));
+    return Math.round(probability * 100) / 100;
+  }
+
+  private static generateTornadoTimeline(
+    lat: number,
+    lon: number,
+    forecastHours: number,
+    parameters: { cape: number; shear: number; helicity: number }
+  ): TornadoRiskTimelinePoint[] {
+    const timeline: TornadoRiskTimelinePoint[] = [];
+    const step = 3;
+
+    for (let hour = 0; hour <= forecastHours; hour += step) {
+      const decay = 1 - Math.min(0.75, hour / (forecastHours * 1.6));
+      const hourVariance = (this.pseudoRandom(lat + hour, lon - hour, forecastHours) - 0.5) * 3;
+      const adjustedParameters = {
+        cape: parameters.cape * (0.9 + this.pseudoRandom(lat, lon, hour) * 0.2),
+        shear: parameters.shear * (0.85 + this.pseudoRandom(lat, lon, hour + 1) * 0.25),
+        helicity: parameters.helicity * (0.88 + this.pseudoRandom(lat, lon, hour + 2) * 0.3),
+      };
+
+      const riskIndex = this.calculateRiskIndex(adjustedParameters, forecastHours, hourVariance) * decay;
+      const normalizedRisk = Math.round(Math.max(0, Math.min(10, riskIndex)) * 10) / 10;
+      const probability = this.calculateProbability(normalizedRisk) * decay;
+
+      timeline.push({
+        hourOffset: hour,
+        riskIndex: Math.round(normalizedRisk * 10) / 10,
+        probability: Math.round(Math.max(0.02, Math.min(0.98, probability)) * 100) / 100,
+      });
+    }
+
+    return timeline;
+  }
+
+  private static getRiskSummary(riskIndex: number): string {
+    if (riskIndex < 2) {
+      return 'Minimal tornado threat. Routine monitoring recommended.';
+    }
+    if (riskIndex < 4) {
+      return 'Low-end risk. Keep an eye on forecast updates and radar trends.';
+    }
+    if (riskIndex < 6) {
+      return 'Moderate risk. Ingredients are present for isolated severe storms.';
+    }
+    if (riskIndex < 8) {
+      return 'Elevated risk. Organized severe storms capable of producing tornadoes are possible.';
+    }
+    return 'High risk. Conditions favor strong tornado development. Review safety plans immediately.';
+  }
+
+  private static pseudoRandom(lat: number, lon: number, seed: number): number {
+    const x = Math.sin(lat * 12.9898 + lon * 78.233 + seed * 43758.5453) * 43758.5453;
+    return x - Math.floor(x);
   }
 }
