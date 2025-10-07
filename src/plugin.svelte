@@ -100,7 +100,8 @@
       crop: selectedCrop,
       baseTemp,
       upperTemp,
-      timePeriod
+      timePeriod,
+      method: calculationMethod
     };
 
     try {

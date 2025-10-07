@@ -1,12 +1,10 @@
-import type { HeatUnitData, CalculationSettings } from './types';
+import type { CalculationSettings } from './types';
 
 export class HeatUnitCalculator {
   /**
    * Calculate Growing Degree Days using the simple average method
    */
   static calculateSimpleGDD(tMin: number, tMax: number, baseTemp: number, upperTemp?: number): number {
-    const avgTemp = (tMin + tMax) / 2;
-
     // Apply upper threshold if specified
     const adjustedMax = upperTemp ? Math.min(tMax, upperTemp) : tMax;
     const adjustedMin = Math.max(tMin, baseTemp);
@@ -34,18 +32,18 @@ export class HeatUnitCalculator {
   static calculateDoubleSineGDD(tMin: number, tMax: number, baseTemp: number, upperTemp?: number): number {
     // Simplified double-sine approximation
     // In a real implementation, this would use more complex sine wave calculations
-    const avgTemp = (tMin + tMax) / 2;
-    const tempRange = (tMax - tMin) / 2;
-
     // Apply thresholds
     const effectiveMin = Math.max(tMin, baseTemp);
     const effectiveMax = upperTemp ? Math.min(tMax, upperTemp) : tMax;
 
     if (effectiveMax <= baseTemp) return 0;
 
-    // Approximation of sine wave integration
+    // Approximation of sine wave integration using the daily amplitude
     const adjustedAvg = (effectiveMin + effectiveMax) / 2;
-    return Math.max(0, adjustedAvg - baseTemp);
+    const amplitude = (effectiveMax - effectiveMin) / 2;
+    const sineAdjustment = amplitude / Math.PI;
+
+    return Math.max(0, adjustedAvg + sineAdjustment - baseTemp);
   }
 
   /**

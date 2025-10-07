@@ -4,7 +4,7 @@ export class HeatMapOverlay extends L.Layer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private data: Array<{lat: number, lon: number, intensity: number}> = [];
-  protected _map!: L.Map;
+  protected declare _map: L.Map;
 
   constructor(public options: any = {}) {
     super();

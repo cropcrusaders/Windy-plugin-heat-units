@@ -10,8 +10,8 @@ export class WindyDataAdapter {
       const picker = (window as any).W?.picker;
       if (!picker) throw new Error('Windy picker not available');
 
-      // Get current weather data
-      const data = picker.getPickerData();
+      // Get current weather data to bias the mock data towards live conditions
+      const pickerData = typeof picker.getPickerData === 'function' ? picker.getPickerData() : null;
 
       // In a real implementation, you would:
       // 1. Use Windy's API to get historical temperature data
@@ -19,7 +19,7 @@ export class WindyDataAdapter {
       // 3. Extract min/max temperatures for the specified period
 
       // Mock data for demonstration
-      const mockTemperatureData = this.generateMockTemperatureData(lat, lon, days);
+      const mockTemperatureData = this.generateMockTemperatureData(lat, lon, days, pickerData);
 
       return {
         lat,
@@ -41,7 +41,7 @@ export class WindyDataAdapter {
   /**
    * Generate realistic mock temperature data for demonstration
    */
-  private static generateMockTemperatureData(lat: number, lon: number, days: number) {
+  private static generateMockTemperatureData(lat: number, lon: number, days: number, pickerData: any) {
     const now = new Date();
     const dailyGDD: number[] = [];
     const minTemps: number[] = [];
@@ -50,18 +50,29 @@ export class WindyDataAdapter {
 
     // Base temperature varies by latitude
     const baseTemp = 10; // Corn base temperature
-    const seasonalVariation = Math.sin((new Date().getMonth() - 3) * Math.PI / 6) * 10;
+    const seasonalVariation = Math.sin((now.getMonth() - 3) * Math.PI / 6) * 10;
     const latitudeEffect = (50 - Math.abs(lat)) * 0.5;
+    const longitudeEffect = Math.cos((lon * Math.PI) / 180) * 3;
+    const pickerTemperature = typeof pickerData?.values?.temp === 'number'
+      ? pickerData.values.temp
+      : typeof pickerData?.temp === 'number'
+        ? pickerData.temp
+        : null;
 
     for (let i = days; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
 
       // Generate realistic temperature range
-      const dayOfYear = date.getDay();
-      const randomVariation = (Math.random() - 0.5) * 8;
+      const startOfYear = new Date(date.getFullYear(), 0, 0);
+      const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+      const annualCycle = Math.sin((dayOfYear / 365) * 2 * Math.PI);
+      const randomVariation = (Math.random() - 0.5) * 6;
 
-      const avgTemp = 15 + seasonalVariation + latitudeEffect + randomVariation;
+      let avgTemp = 15 + seasonalVariation + latitudeEffect + longitudeEffect + annualCycle * 5 + randomVariation;
+      if (pickerTemperature !== null) {
+        avgTemp = (avgTemp + pickerTemperature) / 2;
+      }
       const tempRange = 8 + Math.random() * 4;
 
       const tMin = avgTemp - tempRange / 2;
@@ -117,7 +128,11 @@ export class WindyDataAdapter {
         const latitudeFactor = (50 - Math.abs(lat)) * 0.02;
         const randomFactor = Math.random() * 0.3;
 
-        const gdd = Math.max(0, (300 + seasonalFactor * 200 + latitudeFactor * 100 + randomFactor * 100));
+        const methodAdjustment = settings.method === 'double-sine' ? 1.1 : settings.method === 'modified' ? 1.05 : 1;
+        const periodAdjustment = Math.max(1, settings.timePeriod / 30);
+        const baseAdjustment = (settings.baseTemp - 5) * -4;
+
+        const gdd = Math.max(0, (300 + seasonalFactor * 200 + latitudeFactor * 100 + randomFactor * 100 + baseAdjustment)) * methodAdjustment * (periodAdjustment / 1.5);
 
         data.push({
           lat,
