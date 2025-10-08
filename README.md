@@ -44,6 +44,15 @@ work consistently with the GitHub Actions workflow.
    `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
 
+### Troubleshooting development builds
+
+- **"Error loading plugin... dev server is not running"**: Windy loads
+  development builds over HTTPS with a self-signed certificate. Open the
+  requested URL (for example,
+  `https://windy-plugins.com/11047871/windy-plugin-heat-units/1.0.11/plugin.min.js`)
+  directly in your browser and accept the certificate warning. Reload the
+  Windy Plugin dev page afterwards and the bundle will be served correctly.
+
 ### Production Deployment
 
 1. Get API key from https://api.windy.com/keys
