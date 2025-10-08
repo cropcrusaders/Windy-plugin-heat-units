@@ -3,14 +3,27 @@ import sveltePreprocess from 'svelte-preprocess';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
+import terser from '@rollup/plugin-terser';
 
 export default {
   input: 'src/plugin.ts',
-  output: {
-    file: 'dist/plugin.js',
-    format: 'es',
-    inlineDynamicImports: true
-  },
+  output: [
+    {
+      file: 'dist/plugin.js',
+      format: 'es',
+      inlineDynamicImports: true,
+    },
+    {
+      file: 'dist/plugin.min.js',
+      format: 'es',
+      inlineDynamicImports: true,
+      plugins: [
+        terser({
+          module: true,
+        }),
+      ],
+    },
+  ],
   plugins: [
     svelte({
       preprocess: sveltePreprocess(),
