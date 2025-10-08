@@ -1,12 +1,10 @@
-import type { HeatUnitData, CalculationSettings } from './types';
+import type { CalculationSettings } from './types';
 
 export class HeatUnitCalculator {
   /**
    * Calculate Growing Degree Days using the simple average method
-   */
+  */
   static calculateSimpleGDD(tMin: number, tMax: number, baseTemp: number, upperTemp?: number): number {
-    const avgTemp = (tMin + tMax) / 2;
-
     // Apply upper threshold if specified
     const adjustedMax = upperTemp ? Math.min(tMax, upperTemp) : tMax;
     const adjustedMin = Math.max(tMin, baseTemp);
@@ -44,7 +42,9 @@ export class HeatUnitCalculator {
     if (effectiveMax <= baseTemp) return 0;
 
     // Approximation of sine wave integration
-    const adjustedAvg = (effectiveMin + effectiveMax) / 2;
+    const clippedRange = Math.max(0, tempRange - Math.max(0, baseTemp - effectiveMin));
+    const sineAdjustment = clippedRange / Math.PI;
+    const adjustedAvg = Math.min(effectiveMax, avgTemp + sineAdjustment);
     return Math.max(0, adjustedAvg - baseTemp);
   }
 

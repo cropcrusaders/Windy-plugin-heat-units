@@ -16,6 +16,10 @@ export interface HeatUnitData {
     max: number;
     avg: number;
   };
+  current?: {
+    temperature: number | null;
+    dewPoint: number | null;
+  };
 }
 
 export interface CalculationSettings {
