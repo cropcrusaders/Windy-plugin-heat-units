@@ -99,6 +99,20 @@ function renderBootstrapError(target: HTMLElement) {
   target.appendChild(errorContainer);
 }
 
+const windyPluginModule = {
+  config,
+  default: plugin,
+};
+
+declare global {
+  // eslint-disable-next-line no-var
+  var windyPlugin: typeof windyPluginModule | undefined;
+}
+
+if (typeof globalThis !== 'undefined') {
+  (globalThis as typeof globalThis & { windyPlugin?: typeof windyPluginModule }).windyPlugin = windyPluginModule;
+}
+
 // Export the plugin
 export default plugin;
 export { config };
