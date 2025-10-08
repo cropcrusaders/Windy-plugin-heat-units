@@ -1,6 +1,6 @@
 const config = {
     name: 'windy-plugin-heat-units',
-    version: '1.0.4',
+    version: '1.0.5',
     icon: '🌡️',
     title: 'Agricultural Heat Units',
     description: 'Calculate and visualize Growing Degree Days (GDD) for optimal crop management and agricultural planning',
