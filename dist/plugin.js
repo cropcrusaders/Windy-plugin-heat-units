@@ -1,6 +1,6 @@
 const config = {
     name: 'windy-plugin-heat-units',
-    version: '1.0.8',
+    version: '1.0.9',
     icon: '🌡️',
     title: 'Agricultural Heat Units',
     description: 'Calculate and visualize Growing Degree Days (GDD) for optimal crop management and agricultural planning',
@@ -19,6 +19,10 @@ const config = {
  * Main plugin entry point that integrates with Windy.com
  */
 const plugin$1 = async (params) => {
+    if (typeof document === 'undefined') {
+        console.warn('[windy-plugin-heat-units] Document is not available; skipping UI bootstrap.');
+        return () => { };
+    }
     const { el } = params;
     const target = ensureHostElement(params, el);
     target.innerHTML = '';
