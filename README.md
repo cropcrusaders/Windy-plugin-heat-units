@@ -5,7 +5,8 @@
 This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural planning and crop management. It integrates seamlessly with Windy.com's weather platform to provide farmers and agricultural professionals with essential heat unit data.
 
 Once published, you can load the plugin directly from `https://windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json`.
-If that URL returns a `NoSuchKey` error, the upload may not have completed or it hasn't propagated yet.
+If that URL returns a `NoSuchKey` error, run `npm run check:plugin-url` to verify whether the file is reachable. The script performs
+a quick HEAD request and prints guidance if the upload is still propagating or the path is incorrect.
 
 ## Features
 
@@ -56,6 +57,12 @@ work consistently with the GitHub Actions workflow.
   `https://windy-plugins.com/11047871/windy-plugin-heat-units/1.0.11/plugin.min.js`)
   directly in your browser and accept the certificate warning. Reload the
   Windy Plugin dev page afterwards and the bundle will be served correctly.
+- **"NoSuchKey" while loading the production URL**: Confirm that the GitHub
+  Actions release workflow completed successfully. Then run `npm run
+  check:plugin-url` locally to ensure the published file is live. If the
+  command reports `NoSuchKey`, wait a few minutes and retry—the CDN may still
+  be propagating the asset. Persistent `NoSuchKey` responses indicate the
+  release did not finish and the archive must be uploaded again.
 
 ### Frequently asked questions
 
@@ -85,6 +92,14 @@ troubleshooting section and reload the page.
    The `npm run release` script invokes `curl` with the `x-windy-api-key` header
    and uploads `windy-plugin-heat-units.tar`. If the API key is missing or
    invalid, the upload request will fail with `403 Forbidden`.
+
+6. After the upload completes, verify that the CDN is serving the new build:
+   ```bash
+   npm run check:plugin-url
+   ```
+   The command checks the published `plugin.json` and reports whether the file
+   is accessible. If the response still mentions `NoSuchKey`, wait a few
+   minutes for propagation or rerun the release if the asset never appears.
    
    **Note:** Some networks block POST requests to `windy-plugins.com`. If the
    upload fails with `Method forbidden`, run the release from a network that
