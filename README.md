@@ -43,6 +43,30 @@ work consistently with the GitHub Actions workflow.
    The official getting-started guide mentions a local server at
    `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
+   The `npm start` command watches the source files and continuously writes the
+   bundle to `dist/plugin.js`. Windy's development site reads that file directly
+   after you accept its self-signed certificate (see troubleshooting below), so
+   there's no need to run `npm run dev` or any additional HTTP server.
+
+### Troubleshooting development builds
+
+- **"Error loading plugin... dev server is not running"**: Windy loads
+  development builds over HTTPS with a self-signed certificate. Open the
+  requested URL (for example,
+  `https://windy-plugins.com/11047871/windy-plugin-heat-units/1.0.11/plugin.min.js`)
+  directly in your browser and accept the certificate warning. Reload the
+  Windy Plugin dev page afterwards and the bundle will be served correctly.
+
+### Frequently asked questions
+
+#### Do I need to run my own server to try the plugin locally?
+
+No. When you run `npm start` the build pipeline writes the latest bundle into
+the `dist/` folder. The Windy development portal (`https://windy-plugins.com/dev`)
+loads that bundle over HTTPS once you've trusted Windy's self-signed
+certificate. If the page still reports that the dev server is unavailable, it
+usually means the certificate hasn't been accepted yet—follow the steps in the
+troubleshooting section and reload the page.
 
 ### Production Deployment
 
