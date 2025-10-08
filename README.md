@@ -48,10 +48,12 @@ work consistently with the GitHub Actions workflow.
 
 1. Get API key from https://api.windy.com/keys
 2. Add `WINDY_API_KEY` to your GitHub repository secrets
-3. Push to the `main` branch. The GitHub Actions workflow automatically builds
+3. (Optional) Run `npm run check:api-key` locally to confirm the environment
+   variable is available before triggering a release.
+4. Push to the `main` branch. The GitHub Actions workflow automatically builds
    the plugin, packages it as `windy-plugin-heat-units.tar`, and uploads it over
    a secure HTTPS connection.
-4. To publish manually from your local machine, run:
+5. To publish manually from your local machine, run:
    ```bash
    export WINDY_API_KEY=<your_key>
    npm run release
