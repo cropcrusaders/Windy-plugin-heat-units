@@ -10,16 +10,26 @@ export default {
   output: [
     {
       file: 'dist/plugin.js',
-      format: 'es',
+      format: 'iife',
+      name: 'windyPlugin',
+      exports: 'named',
       inlineDynamicImports: true,
+      globals: {
+        leaflet: 'L',
+      },
     },
     {
       file: 'dist/plugin.min.js',
-      format: 'es',
+      format: 'iife',
+      name: 'windyPlugin',
+      exports: 'named',
       inlineDynamicImports: true,
+      globals: {
+        leaflet: 'L',
+      },
       plugins: [
         terser({
-          module: true,
+          module: false,
         }),
       ],
     },
