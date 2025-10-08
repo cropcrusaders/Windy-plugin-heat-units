@@ -11,7 +11,7 @@ export class WindyDataAdapter {
       if (!picker) throw new Error('Windy picker not available');
 
       // Get current weather data
-      const data = picker.getPickerData();
+      const pickerData = picker.getPickerData();
 
       // In a real implementation, you would:
       // 1. Use Windy's API to get historical temperature data
@@ -30,6 +30,10 @@ export class WindyDataAdapter {
           min: Math.min(...mockTemperatureData.minTemps),
           max: Math.max(...mockTemperatureData.maxTemps),
           avg: mockTemperatureData.avgTemp,
+        },
+        current: {
+          temperature: pickerData?.values?.temp ?? mockTemperatureData.avgTemp,
+          dewPoint: pickerData?.values?.dewpoint ?? null,
         },
       };
     } catch (error) {
@@ -52,16 +56,20 @@ export class WindyDataAdapter {
     const baseTemp = 10; // Corn base temperature
     const seasonalVariation = Math.sin((new Date().getMonth() - 3) * Math.PI / 6) * 10;
     const latitudeEffect = (50 - Math.abs(lat)) * 0.5;
+    const longitudeEffect = Math.cos((lon % 180) * Math.PI / 180) * 2;
 
     for (let i = days; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
 
       // Generate realistic temperature range
-      const dayOfYear = date.getDay();
-      const randomVariation = (Math.random() - 0.5) * 8;
+      const dayOfYear = Math.floor(
+        (date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const seasonalWave = Math.sin((dayOfYear / 365) * Math.PI * 2) * 5;
+      const randomVariation = (Math.random() - 0.5) * 6;
 
-      const avgTemp = 15 + seasonalVariation + latitudeEffect + randomVariation;
+      const avgTemp = 15 + seasonalVariation + latitudeEffect + longitudeEffect + seasonalWave + randomVariation;
       const tempRange = 8 + Math.random() * 4;
 
       const tMin = avgTemp - tempRange / 2;
@@ -106,6 +114,8 @@ export class WindyDataAdapter {
 
     const latStep = (bounds.north - bounds.south) / gridSize;
     const lonStep = (bounds.east - bounds.west) / gridSize;
+    const baseTemp = settings?.baseTemp ?? 10;
+    const targetGdd = settings?.targetGdd ?? 1200;
 
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
@@ -117,13 +127,13 @@ export class WindyDataAdapter {
         const latitudeFactor = (50 - Math.abs(lat)) * 0.02;
         const randomFactor = Math.random() * 0.3;
 
-        const gdd = Math.max(0, (300 + seasonalFactor * 200 + latitudeFactor * 100 + randomFactor * 100));
+        const gdd = Math.max(0, 300 + seasonalFactor * 200 + latitudeFactor * 100 + randomFactor * 100 - baseTemp * 2);
 
         data.push({
           lat,
           lon,
           gdd,
-          intensity: Math.min(1, gdd / 800), // Normalize for color mapping
+          intensity: Math.min(1, gdd / targetGdd), // Normalize for color mapping
         });
       }
     }
