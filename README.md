@@ -41,6 +41,17 @@ work consistently with the GitHub Actions workflow.
    npm start
    ```
 4. Open Windy Plugins and navigate to `https://windy-plugins.com/dev` to test the plugin.
+   If the browser refuses to load the page because of the self-signed
+   certificate, run:
+
+   ```bash
+   npm run open:dev
+   ```
+
+   The command launches Chrome/Chromium/Edge with certificate warnings disabled
+   for the session and points it directly to the Windy development portal. If
+   you prefer to use another browser, follow the manual certificate acceptance
+   steps in the troubleshooting section.
    The official getting-started guide mentions a local server at
    `http://localhost:9999/plugin.js`, but this project only compiles the
    plugin; it does not start a web server.
@@ -57,6 +68,8 @@ work consistently with the GitHub Actions workflow.
   `https://windy-plugins.com/11047871/windy-plugin-heat-units/1.0.12/plugin.min.js`)
   directly in your browser and accept the certificate warning. Reload the
   Windy Plugin dev page afterwards and the bundle will be served correctly.
+  Alternatively, run `npm run open:dev` to launch a Chromium-based browser with
+  certificate warnings suppressed for the session.
 - **"NoSuchKey" while loading the production URL**: Confirm that the GitHub
   Actions release workflow completed successfully. Then run `npm run
   check:plugin-url` locally to ensure the published file is live. If the
