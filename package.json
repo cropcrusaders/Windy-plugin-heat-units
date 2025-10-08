@@ -24,6 +24,7 @@
     "prerelease": "npm run lint && npm run type-check",
     "release": "bash -c 'set -e; if [ -z \"$WINDY_API_KEY\" ]; then echo \"❌ Error: WINDY_API_KEY is not set\" && exit 1; fi; echo \"🔍 Running pre-release checks...\"; npm run prerelease; echo \"🔨 Building plugin...\"; npm run build:prod; echo \"📦 Creating package...\"; npm run package; echo \"📊 Package size: $(stat -c%s windy-plugin-heat-units.tar 2>/dev/null || stat -f%z windy-plugin-heat-units.tar) bytes\"; echo \"📤 Uploading to Windy...\"; response=$(curl -L -w \"%{http_code}\" -s -o /tmp/windy_response.json --fail-with-body -XPOST https://node.windy.com/plugins/v1.0/upload -H \"x-windy-api-key: $WINDY_API_KEY\" -F \"plugin_archive=@./windy-plugin-heat-units.tar\"); http_code=\"${response: -3}\"; echo \"📊 HTTP Status: $http_code\"; if [ -f /tmp/windy_response.json ]; then echo \"📋 Response:\"; cat /tmp/windy_response.json; echo; fi; if [ \"$http_code\" = \"404\" ] || [ \"$http_code\" = \"410\" ]; then echo \"Endpoint not found (HTTP $http_code). Check docs.\"; exit 1; fi; if [ \"$http_code\" -ge 200 ] && [ \"$http_code\" -lt 300 ]; then echo \"✅ Plugin uploaded successfully!\"; rm -f /tmp/windy_response.json; else echo \"❌ Upload failed with HTTP $http_code\"; exit 1; fi'",
     "dev": "npm run start",
+    "open:dev": "node scripts/open-windy-dev.mjs",
     "check:api-key": "node scripts/check-api-key.mjs",
     "check:plugin-url": "node scripts/check-plugin-url.mjs"
   },
@@ -72,7 +73,8 @@
     "svelte": "^4.2.19",
     "svelte-preprocess": "^6.0.3",
     "tslib": "^2.8.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "chrome-launcher": "^1.2.1"
   },
   "type": "module"
 }
