@@ -5,6 +5,11 @@ import config from './pluginConfig';
  * Main plugin entry point that integrates with Windy.com
  */
 const plugin: PluginDataLoader = async (params) => {
+  if (typeof document === 'undefined') {
+    console.warn('[windy-plugin-heat-units] Document is not available; skipping UI bootstrap.');
+    return () => {};
+  }
+
   const { el } = params;
 
   const target = ensureHostElement(params, el);
