@@ -183,6 +183,11 @@ operational:
    current version from `package.json`. If the check fails, the workflow invokes
    `npm run release` automatically and then rechecks availability so the plugin
    comes back online without manual intervention.
+6. **Enforce HTTPS references.** The `Enforce SSL usage` workflow
+   (`.github/workflows/check-ssl.yml`) runs on every push and pull request to
+   ensure the codebase does not introduce insecure HTTP links. Run
+   `npm run check:ssl` locally if you need to verify a branch before opening a
+   pull request.
 
 As long as the CDN endpoint continues returning `200 OK`, users can load the
 plugin any time without needing your development environment to be online.

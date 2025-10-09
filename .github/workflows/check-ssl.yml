@@ -1,0 +1,22 @@
+name: Enforce SSL usage
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify-ssl:
+    name: Check for insecure HTTP references
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run SSL enforcement script
+        run: node scripts/check-ssl.mjs
