@@ -70,6 +70,40 @@ work consistently with the GitHub Actions workflow.
   Windy Plugin dev page afterwards and the bundle will be served correctly.
   Alternatively, run `npm run open:dev` to launch a Chromium-based browser with
   certificate warnings suppressed for the session.
+
+#### Accepting Windy's self-signed certificate manually
+
+Most browsers make it possible to trust the Windy development portal's
+self-signed certificate for a single session. The exact wording differs per
+browser, but the flow is generally:
+
+1. Open `https://windy-plugins.com/dev` (or the plugin URL that Windy is trying
+   to fetch) and wait for the warning page to appear.
+2. Review the certificate details to confirm the page is actually hosted by
+   `windy-plugins.com`.
+3. Follow the browser-specific prompts:
+   - **Chrome / Edge / Chromium**: Click **Advanced** → **Proceed to
+     windy-plugins.com (unsafe)**. The exception lasts until you close the
+     browser.
+   - **Firefox**: Click **Advanced** → **Accept the Risk and Continue**. Firefox
+     stores the exception and will load the dev portal normally afterwards.
+   - **Safari (macOS)**: Click **Show Details** → **visit this website** →
+     **Visit Website**. macOS may prompt for your password to add the temporary
+     trust entry.
+4. Reload `https://windy-plugins.com/dev` and the plugin bundle should load
+   immediately, as long as `npm start` is still running.
+
+If you'd rather skip these prompts, run `npm run open:dev` to launch a
+Chromium-based browser instance with the necessary flags to ignore certificate
+warnings for the session.
+
+> **Note for iOS testers:** The Windy development portal currently cannot be
+> trusted on iOS Safari. After tapping **Show Details** → **Visit This
+> Website**, Safari reloads the request without the certificate exception and
+> Windy's CDN returns a `NoSuchKey` error. To test on mobile, accept the
+> certificate on a desktop browser and use remote debugging or browser sync to
+> inspect the plugin, or publish a staging build and load it from the public
+> plugin catalog instead.
 - **"NoSuchKey" while loading the production URL**: Confirm that the GitHub
   Actions release workflow completed successfully. Then run `npm run
   check:plugin-url` locally to ensure the published file is live. If the
@@ -117,6 +151,41 @@ troubleshooting section and reload the page.
    **Note:** Some networks block POST requests to `windy-plugins.com`. If the
    upload fails with `Method forbidden`, run the release from a network that
    allows outbound HTTPS POST to that domain.
+
+### Keeping the plugin live 24/7
+
+Windy serves public plugins directly from the tarball you upload through the
+release workflow. Once a version is published, it stays online until you
+replace or remove it, so the main tasks for keeping the plugin "always on" are
+operational:
+
+1. **Maintain an evergreen `plugin.json`.** Ensure the `dist/plugin.json`
+   points to the latest tarball name that the release workflow uploads. If the
+   file references an old archive, Windy's CDN will continue serving that
+   version even after you publish a new build.
+2. **Keep the release automation healthy.** The GitHub Actions workflow only
+   runs when you push to `main`. Check the "Releases" workflow in GitHub after
+   each merge to confirm it finished successfully and uploaded the tarball.
+   Rerun the workflow (or trigger `npm run release` locally) if it fails.
+3. **Monitor CDN availability.** Schedule a simple uptime check—such as a
+   GitHub Actions cron job or an external monitor—to request
+   `https://windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json`.
+   Alert on non-200 responses so you can re-upload quickly if the file ever
+   disappears.
+4. **Re-release when secrets rotate.** If your `WINDY_API_KEY` expires or is
+   revoked, all automated uploads will fail until you update the GitHub secret.
+   Replace the key promptly and rerun the release workflow to keep the plugin
+   available.
+5. **Enable automated uptime enforcement.** This repository now ships with an
+   `Ensure plugin uptime` GitHub Actions workflow (`.github/workflows/ensure-plugin-uptime.yml`).
+   Add the `WINDY_API_KEY` secret to your repository settings and the job will
+   run hourly to verify that `plugin.json` is reachable and still advertises the
+   current version from `package.json`. If the check fails, the workflow invokes
+   `npm run release` automatically and then rechecks availability so the plugin
+   comes back online without manual intervention.
+
+As long as the CDN endpoint continues returning `200 OK`, users can load the
+plugin any time without needing your development environment to be online.
 
 ## Usage
 
