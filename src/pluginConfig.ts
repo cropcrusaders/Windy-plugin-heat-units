@@ -8,6 +8,8 @@ const config: ExternalPluginConfig = {
   description: 'Calculate and visualize Growing Degree Days (GDD) for optimal crop management and agricultural planning',
   author: 'crop-crusaders',
   repository: 'https://github.com/crop-crusaders/windy-plugin-heat-units',
+  repositoryOwner: 'crop-crusaders',
+  repositoryName: 'windy-plugin-heat-units',
   desktopUI: 'rhpane',
   mobileUI: 'fullscreen',
   routerPath: '/heat-units',
@@ -15,6 +17,7 @@ const config: ExternalPluginConfig = {
   listenToSingleclick: true,
   built: Date.now(),
   builtReadable: new Date().toISOString(),
+  commitSha: 'development',
 };
 
 export default config;

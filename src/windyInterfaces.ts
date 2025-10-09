@@ -16,6 +16,8 @@ export interface ExternalPluginConfig {
   description: string;
   author: string;
   repository: string;
+  repositoryOwner: string;
+  repositoryName: string;
   desktopUI: string;
   mobileUI: string;
   routerPath: string;
@@ -23,4 +25,5 @@ export interface ExternalPluginConfig {
   listenToSingleclick: boolean;
   built: number;
   builtReadable: string;
+  commitSha: string;
 }
