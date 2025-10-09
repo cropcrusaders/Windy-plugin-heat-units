@@ -11,5 +11,10 @@
   "routerPath": "/heat-units",
   "addToContextmenu": true,
   "listenToSingleclick": true,
-  "main": "dist/plugin.js"
+  "main": "dist/plugin.js",
+  "built": 1759969710093,
+  "builtReadable": "2025-10-09T00:28:30.093Z",
+  "commitSha": "c0ce0c41dd2c7fb8fafac34d9dbcea0d4628357c",
+  "repositoryOwner": "crop-crusaders",
+  "repositoryName": "windy-plugin-heat-units"
 }

@@ -35,6 +35,9 @@ jobs:
             exit 1
           fi
 
+      - name: Update plugin metadata
+        run: npm run update:metadata
+
       - name: Create plugin archive
         run: |
           tar cf windy-plugin-heat-units.tar --exclude='./windy-plugin-heat-units.tar' --exclude='.git' --exclude='node_modules' .
