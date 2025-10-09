@@ -70,6 +70,32 @@ work consistently with the GitHub Actions workflow.
   Windy Plugin dev page afterwards and the bundle will be served correctly.
   Alternatively, run `npm run open:dev` to launch a Chromium-based browser with
   certificate warnings suppressed for the session.
+
+#### Accepting Windy's self-signed certificate manually
+
+Most browsers make it possible to trust the Windy development portal's
+self-signed certificate for a single session. The exact wording differs per
+browser, but the flow is generally:
+
+1. Open `https://windy-plugins.com/dev` (or the plugin URL that Windy is trying
+   to fetch) and wait for the warning page to appear.
+2. Review the certificate details to confirm the page is actually hosted by
+   `windy-plugins.com`.
+3. Follow the browser-specific prompts:
+   - **Chrome / Edge / Chromium**: Click **Advanced** → **Proceed to
+     windy-plugins.com (unsafe)**. The exception lasts until you close the
+     browser.
+   - **Firefox**: Click **Advanced** → **Accept the Risk and Continue**. Firefox
+     stores the exception and will load the dev portal normally afterwards.
+   - **Safari**: Click **Show Details** → **visit this website** → **Visit
+     Website**. macOS may prompt for your password to add the temporary trust
+     entry.
+4. Reload `https://windy-plugins.com/dev` and the plugin bundle should load
+   immediately, as long as `npm start` is still running.
+
+If you'd rather skip these prompts, run `npm run open:dev` to launch a
+Chromium-based browser instance with the necessary flags to ignore certificate
+warnings for the session.
 - **"NoSuchKey" while loading the production URL**: Confirm that the GitHub
   Actions release workflow completed successfully. Then run `npm run
   check:plugin-url` locally to ensure the published file is live. If the
