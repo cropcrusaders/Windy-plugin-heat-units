@@ -27,7 +27,8 @@
     "dev": "npm run start",
     "open:dev": "node scripts/open-windy-dev.mjs",
     "check:api-key": "node scripts/check-api-key.mjs",
-    "check:plugin-url": "node scripts/check-plugin-url.mjs"
+    "check:plugin-url": "node scripts/check-plugin-url.mjs",
+    "ensure:live": "node scripts/ensure-plugin-live.mjs"
   },
   "keywords": [
     "windy",
