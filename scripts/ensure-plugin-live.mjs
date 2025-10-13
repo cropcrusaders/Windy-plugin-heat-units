@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
 import { exit } from 'node:process';
 
 const DEFAULT_URL = 'https://windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json';
@@ -11,6 +12,11 @@ const LOCAL_PLUGIN_FALLBACK = 'local://plugin.json';
 const pluginUrl = process.env.PLUGIN_CHECK_URL ?? DEFAULT_URL;
 const retryLimit = Number.parseInt(process.env.PLUGIN_CHECK_RETRIES ?? '', 10) || DEFAULT_RETRIES;
 const retryDelayMs = Number.parseInt(process.env.PLUGIN_CHECK_RETRY_DELAY_MS ?? '', 10) || DEFAULT_RETRY_DELAY_MS;
+const allowFallbackSuccess = (() => {
+  const raw = process.env.PLUGIN_CHECK_ALLOW_FALLBACK_SUCCESS ?? '';
+  const normalized = raw.trim().toLowerCase();
+  return ['1', 'true', 'yes', 'on'].includes(normalized);
+})();
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -22,6 +28,14 @@ function sanitizeSlugFragment(fragment) {
   }
 
   return fragment.replace(/[^a-z0-9._-]/gi, '').slice(0, 200);
+}
+
+function sanitizeBranchName(branch) {
+  if (!branch || typeof branch !== 'string') {
+    return '';
+  }
+
+  return branch.replace(/[^a-z0-9._\/-]/gi, '').replace(/^\/+/, '').slice(0, 200);
 }
 
 function deriveRepositorySlug(repositoryField) {
@@ -92,17 +106,61 @@ async function loadLocalPluginMetadata() {
   return JSON.parse(contents);
 }
 
+function detectCurrentGitBranch() {
+  const envBranchCandidates = [
+    process.env.GITHUB_HEAD_REF,
+    process.env.GITHUB_REF_NAME,
+    process.env.GIT_BRANCH,
+    process.env.BUILDKITE_BRANCH,
+  ];
+
+  for (const candidate of envBranchCandidates) {
+    const sanitized = sanitizeBranchName(candidate);
+    if (sanitized) {
+      return sanitized;
+    }
+  }
+
+  try {
+    const raw = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+    const sanitized = sanitizeBranchName(raw);
+    if (sanitized && sanitized !== 'HEAD') {
+      return sanitized;
+    }
+  } catch (error) {
+    // no-op – fall back to default branches
+  }
+
+  return '';
+}
+
 function buildCandidateUrls(metadata) {
   const urls = [pluginUrl];
 
   if (metadata.repositoryOwner && metadata.repositoryName) {
-    const defaultBranch = process.env.PLUGIN_CHECK_GITHUB_BRANCH?.trim() || 'main';
+    const defaultBranch = sanitizeBranchName(process.env.PLUGIN_CHECK_GITHUB_BRANCH?.trim()) || 'main';
+    const candidateBranches = new Set([defaultBranch]);
 
-    const githubUrl = `${GITHUB_RAW_BASE}/${metadata.repositoryOwner}/${metadata.repositoryName}/${defaultBranch}/plugin.json`;
-    urls.push(githubUrl);
+    const detectedBranch = detectCurrentGitBranch();
+    if (detectedBranch) {
+      candidateBranches.add(detectedBranch);
+    }
 
-    if (defaultBranch !== 'master') {
-      urls.push(`${GITHUB_RAW_BASE}/${metadata.repositoryOwner}/${metadata.repositoryName}/master/plugin.json`);
+    const extraBranches = process.env.PLUGIN_CHECK_GITHUB_BRANCHES?.split(',')
+      .map((entry) => sanitizeBranchName(entry.trim()))
+      .filter(Boolean);
+
+    if (extraBranches?.length) {
+      for (const branch of extraBranches) {
+        candidateBranches.add(branch);
+      }
+    }
+
+    candidateBranches.add('master');
+
+    for (const branch of candidateBranches) {
+      const githubUrl = `${GITHUB_RAW_BASE}/${metadata.repositoryOwner}/${metadata.repositoryName}/${branch}/plugin.json`;
+      urls.push(githubUrl);
     }
   }
 
@@ -126,13 +184,42 @@ function buildCandidateUrls(metadata) {
   });
 }
 
+function buildPrimaryFailureGuidance(primaryFailure) {
+  const message = primaryFailure?.message ?? String(primaryFailure ?? '');
+  const lines = [
+    '🚨 The Windy Plugins CDN did not serve the expected plugin.json.',
+    `   Last error: ${message || '<no error message provided>'}`,
+  ];
+
+  if (/NoSuchKey|404/.test(message)) {
+    lines.push(
+      '   Windy reported that the file does not exist. This usually means the plugin archive has not been uploaded yet or the last upload expired.',
+    );
+    lines.push('   Run `npm run release` (requires WINDY_API_KEY) or trigger the publish workflow to push a fresh build.');
+  } else if (/fetch failed|EAI_AGAIN|ENOTFOUND|ECONNREFUSED|ECONNRESET|ETIMEDOUT/i.test(message)) {
+    lines.push(
+      '   The request failed before reaching Windy. Check your internet connection, VPN/firewall rules, and retry once connectivity is restored.',
+    );
+  } else if (message) {
+    lines.push('   Investigate the error above, resolve it, and rerun the availability check.');
+  }
+
+  lines.push(
+    '   Set PLUGIN_CHECK_ALLOW_FALLBACK_SUCCESS=1 to suppress this failure when you intentionally rely on fallback sources (for example, during offline development).',
+  );
+
+  return lines.join('\n');
+}
+
 async function ensurePluginLive() {
   const metadata = await loadPackageMetadata();
   const { name: expectedName, version: expectedVersion } = metadata;
   const candidateUrls = buildCandidateUrls(metadata);
   const errors = [];
+  let primaryFailure = null;
+  let success = null;
 
-  for (const url of candidateUrls) {
+  candidateLoop: for (const url of candidateUrls) {
     for (let attempt = 1; attempt <= retryLimit; attempt += 1) {
       try {
         let payload;
@@ -166,22 +253,8 @@ async function ensurePluginLive() {
           );
         }
 
-        const successPrefix = url === pluginUrl ? '✅' : '⚠️';
-        const successMessage =
-          url === pluginUrl
-            ? `${url} is online and serves version ${payload.version}.`
-            : url === LOCAL_PLUGIN_FALLBACK
-              ? 'Local plugin.json matched the expected metadata (used as offline fallback).'
-              : `${url} responded with the expected plugin metadata (used as fallback).`;
-        console.log(`${successPrefix} ${successMessage}`);
-
-        if (url !== pluginUrl && url !== LOCAL_PLUGIN_FALLBACK) {
-          console.log(
-            'ℹ️ Primary CDN was unreachable; verify the Windy Plugins upload and propagation status separately.',
-          );
-        }
-
-        return;
+        success = { url, payload };
+        break candidateLoop;
       } catch (error) {
         if (url === LOCAL_PLUGIN_FALLBACK) {
           errors.push({ url, error });
@@ -196,15 +269,60 @@ async function ensurePluginLive() {
           await sleep(retryDelayMs);
         } else {
           errors.push({ url, error });
+          if (url === pluginUrl && !primaryFailure) {
+            primaryFailure = error;
+          }
         }
       }
     }
   }
 
-  const errorMessages = errors.map(({ url, error }) => `• ${url}: ${error.message ?? error}`).join('\n');
-  throw new Error(
-    `Unable to confirm plugin availability from any source.\nTried the following URLs:\n${errorMessages || '<none>'}`,
-  );
+  if (!success) {
+    const errorMessages = errors.map(({ url, error }) => `• ${url}: ${error.message ?? error}`).join('\n');
+    throw new Error(
+      `Unable to confirm plugin availability from any source.\nTried the following URLs:\n${errorMessages || '<none>'}`,
+    );
+  }
+
+  const { url: successUrl, payload: successPayload } = success;
+  const successPrefix = successUrl === pluginUrl ? '✅' : '⚠️';
+  const successMessage =
+    successUrl === pluginUrl
+      ? `${successUrl} is online and serves version ${successPayload.version}.`
+      : successUrl === LOCAL_PLUGIN_FALLBACK
+        ? 'Local plugin.json matched the expected metadata (used as offline fallback).'
+        : `${successUrl} responded with the expected plugin metadata (used as fallback).`;
+  console.log(`${successPrefix} ${successMessage}`);
+
+  if (successUrl === pluginUrl) {
+    return;
+  }
+
+  console.log('ℹ️ Primary CDN was unreachable; verify the Windy Plugins upload and propagation status separately.');
+
+  if (primaryFailure) {
+    const guidance = buildPrimaryFailureGuidance(primaryFailure);
+    if (guidance) {
+      console.warn(guidance);
+    }
+  }
+
+  if (!allowFallbackSuccess) {
+    const guidance =
+      buildPrimaryFailureGuidance(primaryFailure) ||
+      'Primary CDN unavailable and no diagnostic information was captured.';
+    const error = new Error(guidance);
+    if (primaryFailure) {
+      error.cause = primaryFailure;
+    }
+    throw error;
+  }
+
+  if (!primaryFailure) {
+    console.warn(
+      '⚠️ No diagnostic details were captured for the primary CDN failure. Inspect the console output above for potential clues.',
+    );
+  }
 }
 
 ensurePluginLive()
