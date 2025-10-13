@@ -110,6 +110,13 @@ warnings for the session.
   command reports `NoSuchKey`, wait a few minutes and retry—the CDN may still
   be propagating the asset. Persistent `NoSuchKey` responses indicate the
   release did not finish and the archive must be uploaded again.
+- **`npm run ensure:live` falls back to the local plugin metadata**: The
+  `ensure:live` script now tries several sources when verifying the published
+  metadata. It first checks the Windy Plugins CDN, then optional overrides
+  (for example GitHub raw URLs supplied through `PLUGIN_CHECK_FALLBACK_URLS`),
+  and finally the local `plugin.json`. If you see a warning that the local
+  metadata was used, treat it as a signal that the public CDN could not be
+  reached and double-check the latest upload in the Windy dashboard.
 
 ### Frequently asked questions
 
