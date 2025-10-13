@@ -114,9 +114,11 @@ warnings for the session.
   `ensure:live` script now tries several sources when verifying the published
   metadata. It first checks the Windy Plugins CDN, then optional overrides
   (for example GitHub raw URLs supplied through `PLUGIN_CHECK_FALLBACK_URLS`),
-  and finally the local `plugin.json`. If you see a warning that the local
-  metadata was used, treat it as a signal that the public CDN could not be
-  reached and double-check the latest upload in the Windy dashboard.
+  and finally the local `plugin.json`. If the primary CDN is unreachable the
+  command now exits with a failure so that CI/CD jobs can automatically
+  re-upload the archive. Set
+  `PLUGIN_CHECK_ALLOW_FALLBACK_SUCCESS=1 npm run ensure:live` if you
+  intentionally want to ignore CDN outages during offline debugging.
 
 ### Frequently asked questions
 
