@@ -4,9 +4,16 @@
 
 This plugin calculates and visualizes Growing Degree Days (GDD) for agricultural planning and crop management. It integrates seamlessly with Windy.com's weather platform to provide farmers and agricultural professionals with essential heat unit data.
 
-Once published, you can load the plugin directly from `https://windy-plugins.com/plugins/windy-plugin-heat-units/plugin.json`.
-If that URL returns a `NoSuchKey` error, run `npm run check:plugin-url` to verify whether the file is reachable. The script performs
-a quick HEAD request and prints guidance if the upload is still propagating or the path is incorrect.
+Once published, the production bundle is served straight from
+`https://windy-plugins.com`. Every public plugin must live on that domain, so
+your release will ultimately resolve to a URL shaped like
+`https://windy-plugins.com/<userId>/windy-plugin-heat-units/<version>/plugin.min.js`.
+For example, Windy might host version `0.1.1` of this plugin at
+`https://windy-plugins.com/3/windy-plugin-heat-units/0.1.1/plugin.min.js`.
+If the CDN responds with `NoSuchKey`, run `npm run check:plugin-url` to
+verify whether the file is reachable. The script performs a quick HEAD request
+and prints guidance if the upload is still propagating or the path is
+incorrect.
 
 ## Features
 
@@ -133,33 +140,54 @@ troubleshooting section and reload the page.
 
 ### Production Deployment
 
-1. Get API key from https://api.windy.com/keys
-2. Add `WINDY_API_KEY` to your GitHub repository secrets
-3. (Optional) Run `npm run check:api-key` locally to confirm the environment
-   variable is available before triggering a release.
-4. Push to the `main` branch. The GitHub Actions workflow automatically builds
-   the plugin, packages it as `windy-plugin-heat-units.tar`, and uploads it over
-   a secure HTTPS connection.
-5. To publish manually from your local machine, run:
-   ```bash
-   export WINDY_API_KEY=<your_key>
-   npm run release
-   ```
-   The `npm run release` script invokes `curl` with the `x-windy-api-key` header
-   and uploads `windy-plugin-heat-units.tar`. If the API key is missing or
-   invalid, the upload request will fail with `403 Forbidden`.
+Publishing a Windy plugin is always tied to the official CDN:
+`https://windy-plugins.com`. You cannot host the production bundle anywhere
+else. Each release must increase the semantic version in `package.json`, and
+Windy stores that version inside the CDN URL
+(`.../<version>/plugin.min.js`).
 
-6. After the upload completes, verify that the CDN is serving the new build:
-   ```bash
-   npm run check:plugin-url
-   ```
-   The command checks the published `plugin.json` and reports whether the file
-   is accessible. If the response still mentions `NoSuchKey`, wait a few
-   minutes for propagation or rerun the release if the asset never appears.
-   
-   **Note:** Some networks block POST requests to `windy-plugins.com`. If the
-   upload fails with `Method forbidden`, run the release from a network that
-   allows outbound HTTPS POST to that domain.
+#### Publish via GitHub Actions (recommended)
+
+1. **Create a Windy Plugins API key.** Visit
+   https://api.windy.com/keys and generate a new key for your account.
+2. **Store the key as a GitHub secret.** In your repository, open
+   **Settings → Secrets and variables → Actions**, click **New repository
+   secret**, and add `WINDY_API_KEY`.
+3. **Run the `publish-plugin` workflow.** Open the **Actions** tab in GitHub,
+   choose **publish-plugin**, and click **Run workflow**. Pick the branch to
+   publish and decide whether you want a dry run (build only) or to upload the
+   archive to Windy. The workflow installs dependencies, runs lint/type checks,
+   builds the bundle, and invokes `npm run release` to upload when publishing
+   is enabled.
+4. **Review the job summary.** The workflow stores
+   `windy-plugin-heat-units.tar` as an artifact and prints the CDN URL
+   template—`https://windy-plugins.com/<your-user-id>/windy-plugin-heat-units/<version>/plugin.min.js`—in
+   the run summary for quick reference.
+
+By default, the plugin configuration includes `private: true`, which means only
+users with the direct CDN URL can load it. To make the plugin discoverable in
+Windy's public catalog, remove the `private` flag (or set it to
+`private: false`) and ask Windy to review and approve the release.
+
+#### Publish manually (if Actions are unavailable)
+
+Use the built-in release script instead of writing your own curl wrapper. Run
+the following commands from the repository root:
+
+```bash
+npm install
+WINDY_API_KEY=put_your_key_here npm run release
+```
+
+Set `WINDY_DRY_RUN=1 npm run release` if you only want to generate the tarball
+(`windy-plugin-heat-units.tar`) without uploading it. After the upload
+completes, run `npm run check:plugin-url` to confirm the CDN serves the new
+version. If the command still reports `NoSuchKey`, wait a few minutes for
+propagation or retry the upload.
+
+> **Note:** Some networks block POST requests to `windy-plugins.com`. If the
+> upload fails with `Method forbidden`, run the release from a network that
+> allows outbound HTTPS POST to that domain.
 
 ### Keeping the plugin live 24/7
 
