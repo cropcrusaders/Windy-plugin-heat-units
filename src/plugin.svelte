@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import type { PluginContext } from '@windycom/plugin-devtools';
   import { CROP_DATABASE } from './cropDatabase';
   import { HeatUnitCalculator } from './heatUnitCalculator';
   import { WindyDataAdapter } from './windyDataAdapter';
   import type { HeatUnitData, TornadoRiskData } from './types';
+
+  export let ctx: PluginContext;
 
   // Windy API access
   let map: any;
@@ -33,9 +36,25 @@
   let tornadoForecastHours = 48;
 
   // Initialize Windy API access
+  const resolveWindyApi = (): any => {
+    if (ctx?.windy) {
+      return ctx.windy;
+    }
+
+    if ((ctx as unknown as { W?: any })?.W) {
+      return (ctx as unknown as { W?: any }).W;
+    }
+
+    if (typeof window !== 'undefined' && (window as unknown as { W?: any }).W) {
+      return (window as unknown as { W?: any }).W;
+    }
+
+    return null;
+  };
+
   onMount(() => {
     const tryInitializeWindy = () => {
-      const windy = (window as any).W;
+      const windy = resolveWindyApi();
       if (!windy) {
         return false;
       }

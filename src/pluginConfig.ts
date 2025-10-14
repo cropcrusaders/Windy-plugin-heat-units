@@ -1,8 +1,8 @@
-import type { ExternalPluginConfig } from './windyInterfaces';
+import type { PluginConfig } from '@windycom/plugin-devtools';
 
-const config: ExternalPluginConfig = {
+const config: PluginConfig = {
   name: 'windy-plugin-heat-units',
-  version: '1.0.13',
+  version: '1.0.23',
   icon: '🌡️',
   title: 'Agricultural Heat Units',
   description: 'Calculate and visualize Growing Degree Days (GDD) for optimal crop management and agricultural planning',
@@ -15,6 +15,8 @@ const config: ExternalPluginConfig = {
   routerPath: '/heat-units',
   addToContextmenu: true,
   listenToSingleclick: true,
+  devUrl: 'https://localhost:9999/plugin.js',
+  productionUrl: 'https://windy-plugins.com/<your-user-id>/windy-plugin-heat-units/1.0.23/plugin.min.js',
   built: Date.now(),
   builtReadable: new Date().toISOString(),
   commitSha: 'development',

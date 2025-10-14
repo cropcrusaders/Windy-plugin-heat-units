@@ -12,9 +12,11 @@
   "addToContextmenu": true,
   "listenToSingleclick": true,
   "main": "dist/plugin.js",
-  "built": 1759969710093,
-  "builtReadable": "2025-10-09T00:28:30.093Z",
-  "commitSha": "c0ce0c41dd2c7fb8fafac34d9dbcea0d4628357c",
+  "devUrl": "https://localhost:9999/plugin.js",
+  "productionUrl": "https://windy-plugins.com/<your-user-id>/windy-plugin-heat-units/1.0.23/plugin.min.js",
+  "built": 1760423983200,
+  "builtReadable": "2025-10-14T06:39:45.076Z",
+  "commitSha": "development",
   "repositoryOwner": "crop-crusaders",
   "repositoryName": "windy-plugin-heat-units"
 }
