@@ -899,21 +899,22 @@ var windyPlugin = (function (exports) {
 	            totalGDD,
 	            minTemps,
 	            maxTemps,
-	            avgTemp: (minTemps.reduce((a, b) => a + b, 0) + maxTemps.reduce((a, b) => a + b, 0)) / (minTemps.length + maxTemps.length),
+	            avgTemp: (minTemps.reduce((a, b) => a + b, 0) + maxTemps.reduce((a, b) => a + b, 0)) /
+	                (minTemps.length + maxTemps.length),
 	        };
 	    }
 	    /**
 	     * Create overlay data for map visualization
 	     */
-	    static generateHeatMapData(bounds, settings) {
+	    static async generateHeatMapData(bounds, settings) {
 	        // In a real implementation, this would:
 	        // 1. Request temperature data for the visible map bounds
 	        // 2. Calculate GDD for each grid point
 	        // 3. Generate a data structure suitable for Leaflet overlay
-	        return Promise.resolve({
+	        return {
 	            bounds,
 	            data: this.generateMockGridData(bounds, settings),
-	        });
+	        };
 	    }
 	    static generateMockGridData(bounds, settings) {
 	        const gridSize = 20;
@@ -1066,25 +1067,25 @@ var windyPlugin = (function (exports) {
 
 	function get_each_context(ctx, list, i) {
 		const child_ctx = ctx.slice();
-		child_ctx[46] = list[i];
+		child_ctx[47] = list[i];
 		return child_ctx;
 	}
 
 	function get_each_context_1(ctx, list, i) {
 		const child_ctx = ctx.slice();
-		child_ctx[49] = list[i];
-		child_ctx[51] = i;
+		child_ctx[50] = list[i];
+		child_ctx[52] = i;
 		return child_ctx;
 	}
 
 	function get_each_context_2(ctx, list, i) {
 		const child_ctx = ctx.slice();
-		child_ctx[52] = list[i][0];
-		child_ctx[53] = list[i][1];
+		child_ctx[53] = list[i][0];
+		child_ctx[54] = list[i][1];
 		return child_ctx;
 	}
 
-	// (373:4) {:else}
+	// (390:4) {:else}
 	function create_else_block(ctx) {
 		let div0;
 		let label;
@@ -1205,7 +1206,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (330:4) {#if mode === 'heat-units'}
+	// (347:4) {#if mode === 'heat-units'}
 	function create_if_block_6(ctx) {
 		let div0;
 		let label0;
@@ -1502,13 +1503,13 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (334:10) {#each Object.entries(CROP_DATABASE) as [key, crop]}
+	// (351:10) {#each Object.entries(CROP_DATABASE) as [key, crop]}
 	function create_each_block_2(ctx) {
 		let option;
-		let t0_value = /*crop*/ ctx[53].icon + "";
+		let t0_value = /*crop*/ ctx[54].icon + "";
 		let t0;
 		let t1;
-		let t2_value = /*crop*/ ctx[53].name + "";
+		let t2_value = /*crop*/ ctx[54].name + "";
 		let t2;
 
 		return {
@@ -1517,7 +1518,7 @@ var windyPlugin = (function (exports) {
 				t0 = text(t0_value);
 				t1 = space();
 				t2 = text(t2_value);
-				option.__value = /*key*/ ctx[52];
+				option.__value = /*key*/ ctx[53];
 				set_input_value(option, option.__value);
 			},
 			m(target, anchor) {
@@ -1535,7 +1536,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (400:2) {#if selectedLocation}
+	// (417:2) {#if selectedLocation}
 	function create_if_block_5(ctx) {
 		let div;
 		let p;
@@ -1580,7 +1581,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (406:2) {#if isLoading}
+	// (423:2) {#if isLoading}
 	function create_if_block_4(ctx) {
 		let div;
 		let p;
@@ -1619,7 +1620,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (412:2) {#if mode === 'heat-units' && heatUnitData}
+	// (429:2) {#if mode === 'heat-units' && heatUnitData}
 	function create_if_block_1(ctx) {
 		let div15;
 		let div6;
@@ -1964,7 +1965,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (441:46) 
+	// (458:46) 
 	function create_if_block_3(ctx) {
 		let p;
 
@@ -1985,7 +1986,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (439:8) {#if daysToMaturity > 0 && daysToMaturity !== Infinity}
+	// (456:8) {#if daysToMaturity > 0 && daysToMaturity !== Infinity}
 	function create_if_block_2(ctx) {
 		let p;
 		let strong;
@@ -2020,7 +2021,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (458:10) {#each heatUnitData.dailyGdd.slice(-14) as gdd, i}
+	// (475:10) {#each heatUnitData.dailyGdd.slice(-14) as gdd, i}
 	function create_each_block_1(ctx) {
 		let div;
 		let div_title_value;
@@ -2029,18 +2030,18 @@ var windyPlugin = (function (exports) {
 			c() {
 				div = element("div");
 				attr(div, "class", "trend-bar svelte-1p9y649");
-				set_style(div, "height", Math.max(2, /*gdd*/ ctx[49] / Math.max(.../*heatUnitData*/ ctx[1].dailyGdd) * 60) + "px");
-				attr(div, "title", div_title_value = "Day " + (/*i*/ ctx[51] + 1) + ": " + /*gdd*/ ctx[49].toFixed(1) + " GDD");
+				set_style(div, "height", Math.max(2, /*gdd*/ ctx[50] / Math.max(.../*heatUnitData*/ ctx[1].dailyGdd) * 60) + "px");
+				attr(div, "title", div_title_value = "Day " + (/*i*/ ctx[52] + 1) + ": " + /*gdd*/ ctx[50].toFixed(1) + " GDD");
 			},
 			m(target, anchor) {
 				insert(target, div, anchor);
 			},
 			p(ctx, dirty) {
 				if (dirty[0] & /*heatUnitData*/ 2) {
-					set_style(div, "height", Math.max(2, /*gdd*/ ctx[49] / Math.max(.../*heatUnitData*/ ctx[1].dailyGdd) * 60) + "px");
+					set_style(div, "height", Math.max(2, /*gdd*/ ctx[50] / Math.max(.../*heatUnitData*/ ctx[1].dailyGdd) * 60) + "px");
 				}
 
-				if (dirty[0] & /*heatUnitData*/ 2 && div_title_value !== (div_title_value = "Day " + (/*i*/ ctx[51] + 1) + ": " + /*gdd*/ ctx[49].toFixed(1) + " GDD")) {
+				if (dirty[0] & /*heatUnitData*/ 2 && div_title_value !== (div_title_value = "Day " + (/*i*/ ctx[52] + 1) + ": " + /*gdd*/ ctx[50].toFixed(1) + " GDD")) {
 					attr(div, "title", div_title_value);
 				}
 			},
@@ -2052,7 +2053,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (471:2) {#if mode === 'tornado' && tornadoData}
+	// (488:2) {#if mode === 'tornado' && tornadoData}
 	function create_if_block(ctx) {
 		let div8;
 		let div4;
@@ -2357,7 +2358,7 @@ var windyPlugin = (function (exports) {
 		};
 	}
 
-	// (507:10) {#each tornadoData.timeline as point}
+	// (524:10) {#each tornadoData.timeline as point}
 	function create_each_block(ctx) {
 		let div;
 		let div_title_value;
@@ -2366,24 +2367,24 @@ var windyPlugin = (function (exports) {
 			c() {
 				div = element("div");
 				attr(div, "class", "trend-bar svelte-1p9y649");
-				attr(div, "title", div_title_value = `T+${/*point*/ ctx[46].hourOffset}h · Risk ${/*point*/ ctx[46].riskIndex.toFixed(1)} · ${Math.round(/*point*/ ctx[46].probability * 100)}% chance`);
-				set_style(div, "height", `${Math.max(4, /*point*/ ctx[46].riskIndex / 10 * 70)}px`);
-				set_style(div, "background", getRiskColor(/*point*/ ctx[46].riskIndex));
+				attr(div, "title", div_title_value = `T+${/*point*/ ctx[47].hourOffset}h · Risk ${/*point*/ ctx[47].riskIndex.toFixed(1)} · ${Math.round(/*point*/ ctx[47].probability * 100)}% chance`);
+				set_style(div, "height", `${Math.max(4, /*point*/ ctx[47].riskIndex / 10 * 70)}px`);
+				set_style(div, "background", getRiskColor(/*point*/ ctx[47].riskIndex));
 			},
 			m(target, anchor) {
 				insert(target, div, anchor);
 			},
 			p(ctx, dirty) {
-				if (dirty[0] & /*tornadoData*/ 2048 && div_title_value !== (div_title_value = `T+${/*point*/ ctx[46].hourOffset}h · Risk ${/*point*/ ctx[46].riskIndex.toFixed(1)} · ${Math.round(/*point*/ ctx[46].probability * 100)}% chance`)) {
+				if (dirty[0] & /*tornadoData*/ 2048 && div_title_value !== (div_title_value = `T+${/*point*/ ctx[47].hourOffset}h · Risk ${/*point*/ ctx[47].riskIndex.toFixed(1)} · ${Math.round(/*point*/ ctx[47].probability * 100)}% chance`)) {
 					attr(div, "title", div_title_value);
 				}
 
 				if (dirty[0] & /*tornadoData*/ 2048) {
-					set_style(div, "height", `${Math.max(4, /*point*/ ctx[46].riskIndex / 10 * 70)}px`);
+					set_style(div, "height", `${Math.max(4, /*point*/ ctx[47].riskIndex / 10 * 70)}px`);
 				}
 
 				if (dirty[0] & /*tornadoData*/ 2048) {
-					set_style(div, "background", getRiskColor(/*point*/ ctx[46].riskIndex));
+					set_style(div, "background", getRiskColor(/*point*/ ctx[47].riskIndex));
 				}
 			},
 			d(detaching) {
@@ -2628,6 +2629,18 @@ var windyPlugin = (function (exports) {
 		return `hsl(${hue}, 85%, ${40 + ratio * 10}%)`;
 	}
 
+	function toMapBounds(bounds) {
+		const northEast = bounds.getNorthEast();
+		const southWest = bounds.getSouthWest();
+
+		return {
+			north: northEast.lat,
+			east: northEast.lng,
+			south: southWest.lat,
+			west: southWest.lng
+		};
+	}
+
 	function instance($$self, $$props, $$invalidate) {
 		let cropStage;
 		let daysToMaturity;
@@ -2635,12 +2648,12 @@ var windyPlugin = (function (exports) {
 		let { ctx } = $$props;
 
 		// Windy API access
-		let map;
+		let map = null;
 		let broadcast;
 		let windyReady = false;
 		let windyStatus = 'Initializing…';
 		let windyError = '';
-		let windyInitTimer = null;
+		let windyInitTimer;
 		let windyInitAttempts = 0;
 
 		// Component state
@@ -2660,17 +2673,23 @@ var windyPlugin = (function (exports) {
 		let tornadoForecastHours = 48;
 
 		// Initialize Windy API access
+		const isWindyApi = value => {
+			return typeof value === 'object' && value !== null && 'map' in value;
+		};
+
 		const resolveWindyApi = () => {
-			if (ctx?.windy) {
+			if (isWindyApi(ctx?.windy)) {
 				return ctx.windy;
 			}
 
-			if (ctx?.W) {
-				return ctx.W;
+			const ctxWithW = ctx;
+
+			if (isWindyApi(ctxWithW?.W)) {
+				return ctxWithW.W;
 			}
 
-			if (typeof window !== 'undefined' && window.W) {
-				return window.W;
+			if (typeof window !== 'undefined' && isWindyApi(window.W)) {
+				return window.W ?? null;
 			}
 
 			return null;
@@ -2705,7 +2724,7 @@ var windyPlugin = (function (exports) {
 
 							if (windyInitTimer) {
 								clearInterval(windyInitTimer);
-								windyInitTimer = null;
+								windyInitTimer = undefined;
 							}
 						}
 					},
@@ -2725,12 +2744,10 @@ var windyPlugin = (function (exports) {
 
 			if (windyInitTimer) {
 				clearInterval(windyInitTimer);
-				windyInitTimer = null;
+				windyInitTimer = undefined;
 			}
 
-			if (map) {
-				map.on('click', handleMapClick);
-			}
+			map.on('click', handleMapClick);
 
 			if (broadcast) {
 				broadcast.on('pickerOpened', handlePickerOpened);
@@ -2738,9 +2755,7 @@ var windyPlugin = (function (exports) {
 		}
 
 		onDestroy(() => {
-			if (map) {
-				map.off('click', handleMapClick);
-			}
+			map?.off('click', handleMapClick);
 
 			if (broadcast) {
 				broadcast.off('pickerOpened', handlePickerOpened);
@@ -2748,15 +2763,15 @@ var windyPlugin = (function (exports) {
 
 			if (windyInitTimer) {
 				clearInterval(windyInitTimer);
-				windyInitTimer = null;
+				windyInitTimer = undefined;
 			}
 
 			if (heatMapLayer) {
-				map.removeLayer(heatMapLayer);
+				map?.removeLayer(heatMapLayer);
 			}
 
 			if (tornadoLayer) {
-				map.removeLayer(tornadoLayer);
+				map?.removeLayer(tornadoLayer);
 			}
 		});
 
@@ -2878,17 +2893,22 @@ var windyPlugin = (function (exports) {
 		}
 
 		async function createHeatMapOverlay() {
-			const bounds = map.getBounds();
+			if (!map) {
+				return;
+			}
+
+			const leafletBounds = map.getBounds();
 
 			const settings = {
 				crop: selectedCrop,
 				baseTemp,
 				upperTemp,
-				timePeriod
+				timePeriod,
+				targetGdd: CROP_DATABASE[selectedCrop].gddRequired
 			};
 
 			try {
-				const overlayData = await WindyDataAdapter.generateHeatMapData(bounds, settings);
+				const overlayData = await WindyDataAdapter.generateHeatMapData(toMapBounds(leafletBounds), settings);
 				const L = window.L;
 
 				if (!L) {
@@ -2921,10 +2941,14 @@ var windyPlugin = (function (exports) {
 		}
 
 		async function createTornadoOverlay() {
-			const bounds = map.getBounds();
+			if (!map) {
+				return;
+			}
+
+			const leafletBounds = map.getBounds();
 
 			try {
-				const overlayData = await WindyDataAdapter.generateTornadoRiskOverlay(bounds, tornadoForecastHours);
+				const overlayData = await WindyDataAdapter.generateTornadoRiskOverlay(toMapBounds(leafletBounds), tornadoForecastHours);
 				const L = window.L;
 
 				if (!L) {
@@ -3058,7 +3082,7 @@ var windyPlugin = (function (exports) {
 
 	const config = {
 	    name: 'windy-plugin-heat-units',
-	    version: '1.0.24',
+	    version: '1.0.25',
 	    icon: '🌡️',
 	    title: 'Agricultural Heat Units',
 	    description: 'Calculate and visualize Growing Degree Days (GDD) for optimal crop management and agricultural planning',
