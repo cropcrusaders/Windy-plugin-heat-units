@@ -1,18 +1,25 @@
 import L from 'leaflet';
+import type { Map } from 'leaflet';
+
+import type { HeatMapPoint } from './types';
+
+export interface HeatMapOverlayOptions extends L.LayerOptions {
+  pane?: string;
+}
 
 export class HeatMapOverlay extends L.Layer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private data: Array<{lat: number, lon: number, intensity: number}> = [];
-  declare protected _map: L.Map;
+  private data: HeatMapPoint[] = [];
+  declare protected _map: Map;
 
-  constructor(public options: any = {}) {
+  constructor(public options: HeatMapOverlayOptions = {}) {
     super();
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d')!;
   }
 
-  onAdd(map: L.Map): this {
+  onAdd(map: Map): this {
     const pane = map.getPane(this.options.pane || 'overlayPane');
     pane?.appendChild(this.canvas);
 
@@ -24,7 +31,7 @@ export class HeatMapOverlay extends L.Layer {
     return this;
   }
 
-  onRemove(map: L.Map): this {
+  onRemove(map: Map): this {
     map.off('viewreset', this.reset, this);
     map.off('zoom', this.reset, this);
     map.off('move', this.redraw, this);
@@ -35,13 +42,13 @@ export class HeatMapOverlay extends L.Layer {
     return this;
   }
 
-  setData(data: Array<{lat: number, lon: number, intensity: number}>) {
+  setData(data: HeatMapPoint[]) {
     this.data = data;
     this.redraw();
   }
 
   private reset() {
-    const map = this._map as L.Map;
+    const map = this._map;
     const bounds = map.getBounds();
     const size = map.getSize();
 
@@ -57,9 +64,11 @@ export class HeatMapOverlay extends L.Layer {
   }
 
   private redraw() {
-    if (!this._map || !this.data.length) return;
+    if (!this._map || !this.data.length) {
+      return;
+    }
 
-    const map = this._map as L.Map;
+    const map = this._map;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Create gradient for heat visualization

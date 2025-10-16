@@ -1,22 +1,30 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import type { LatLngBounds, LayerGroup, Map as LeafletMap, LeafletMouseEvent } from 'leaflet';
   import type { PluginContext } from '@windycom/plugin-devtools';
   import { CROP_DATABASE } from './cropDatabase';
   import { HeatUnitCalculator } from './heatUnitCalculator';
   import { WindyDataAdapter } from './windyDataAdapter';
-  import type { HeatUnitData, TornadoRiskData } from './types';
+  import type {
+    Coordinates,
+    HeatMapGenerationSettings,
+    HeatUnitData,
+    MapBounds,
+    TornadoRiskData,
+    TornadoRiskMapPoint,
+  } from './types';
 
   export let ctx: PluginContext;
 
   // Windy API access
-  let map: any;
-  let picker: any;
-  let store: any;
-  let broadcast: any;
+  let map: LeafletMap | null = null;
+  let picker: WindyPicker | undefined;
+  let store: WindyStore | undefined;
+  let broadcast: WindyBroadcast | undefined;
   let windyReady = false;
   let windyStatus = 'Initializing…';
   let windyError = '';
-  let windyInitTimer: ReturnType<typeof setInterval> | null = null;
+  let windyInitTimer: ReturnType<typeof setInterval> | undefined;
   let windyInitAttempts = 0;
   const MAX_WINDY_ATTEMPTS = 40;
 
@@ -30,23 +38,28 @@
   let isLoading = false;
   let heatUnitData: HeatUnitData | null = null;
   let tornadoData: TornadoRiskData | null = null;
-  let selectedLocation: {lat: number, lon: number} | null = null;
-  let heatMapLayer: any = null;
-  let tornadoLayer: any = null;
+  let selectedLocation: Coordinates | null = null;
+  let heatMapLayer: LayerGroup | null = null;
+  let tornadoLayer: LayerGroup | null = null;
   let tornadoForecastHours = 48;
 
   // Initialize Windy API access
-  const resolveWindyApi = (): any => {
-    if (ctx?.windy) {
+  const isWindyApi = (value: unknown): value is WindyAPI => {
+    return typeof value === 'object' && value !== null && 'map' in value;
+  };
+
+  const resolveWindyApi = (): WindyAPI | null => {
+    if (isWindyApi(ctx?.windy)) {
       return ctx.windy;
     }
 
-    if ((ctx as unknown as { W?: any })?.W) {
-      return (ctx as unknown as { W?: any }).W;
+    const ctxWithW = ctx as PluginContext & { W?: unknown };
+    if (isWindyApi(ctxWithW?.W)) {
+      return ctxWithW.W;
     }
 
-    if (typeof window !== 'undefined' && (window as unknown as { W?: any }).W) {
-      return (window as unknown as { W?: any }).W;
+    if (typeof window !== 'undefined' && isWindyApi(window.W)) {
+      return window.W ?? null;
     }
 
     return null;
@@ -76,14 +89,14 @@
           windyStatus = 'Windy API not available.';
           if (windyInitTimer) {
             clearInterval(windyInitTimer);
-            windyInitTimer = null;
+            windyInitTimer = undefined;
           }
         }
       }, 500);
     }
   });
 
-  function initializeWindyApi(windy: any) {
+  function initializeWindyApi(windy: WindyAPI) {
     windyReady = true;
     windyStatus = 'Connected to the Windy map.';
     windyError = '';
@@ -95,12 +108,10 @@
 
     if (windyInitTimer) {
       clearInterval(windyInitTimer);
-      windyInitTimer = null;
+      windyInitTimer = undefined;
     }
 
-    if (map) {
-      map.on('click', handleMapClick);
-    }
+    map.on('click', handleMapClick);
 
     if (broadcast) {
       broadcast.on('pickerOpened', handlePickerOpened);
@@ -108,25 +119,23 @@
   }
 
   onDestroy(() => {
-    if (map) {
-      map.off('click', handleMapClick);
-    }
+    map?.off('click', handleMapClick);
     if (broadcast) {
       broadcast.off('pickerOpened', handlePickerOpened);
     }
     if (windyInitTimer) {
       clearInterval(windyInitTimer);
-      windyInitTimer = null;
+      windyInitTimer = undefined;
     }
     if (heatMapLayer) {
-      map.removeLayer(heatMapLayer);
+      map?.removeLayer(heatMapLayer);
     }
     if (tornadoLayer) {
-      map.removeLayer(tornadoLayer);
+      map?.removeLayer(tornadoLayer);
     }
   });
 
-  function handleMapClick(event: any) {
+  function handleMapClick(event: LeafletMouseEvent) {
     const { lat, lng } = event.latlng;
     selectedLocation = { lat, lon: lng };
     if (mode === 'heat-units') {
@@ -136,7 +145,7 @@
     }
   }
 
-  function handlePickerOpened(event: any) {
+  function handlePickerOpened(event: WindyBroadcastEvent) {
     if (event.lat && event.lon) {
       selectedLocation = { lat: event.lat, lon: event.lon };
       if (mode === 'heat-units') {
@@ -238,17 +247,25 @@
   }
 
   async function createHeatMapOverlay() {
-    const bounds = map.getBounds();
-    const settings = {
+    if (!map) {
+      return;
+    }
+
+    const leafletBounds = map.getBounds();
+    const settings: HeatMapGenerationSettings = {
       crop: selectedCrop,
       baseTemp,
       upperTemp,
-      timePeriod
+      timePeriod,
+      targetGdd: CROP_DATABASE[selectedCrop].gddRequired,
     };
 
     try {
-      const overlayData = await WindyDataAdapter.generateHeatMapData(bounds, settings);
-      const L = (window as any).L;
+      const overlayData = await WindyDataAdapter.generateHeatMapData(
+        toMapBounds(leafletBounds),
+        settings
+      );
+      const L = window.L;
 
       if (!L) {
         console.warn('Leaflet API not available to render heat map overlay.');
@@ -257,7 +274,7 @@
 
       const layerGroup = L.layerGroup();
 
-      overlayData.data.forEach((point: any) => {
+      overlayData.data.forEach((point) => {
         const color = getHeatMapColor(point.intensity);
         const marker = L.circleMarker([point.lat, point.lon], {
           radius: 6,
@@ -279,11 +296,18 @@
   }
 
   async function createTornadoOverlay() {
-    const bounds = map.getBounds();
+    if (!map) {
+      return;
+    }
+
+    const leafletBounds = map.getBounds();
 
     try {
-      const overlayData = await WindyDataAdapter.generateTornadoRiskOverlay(bounds, tornadoForecastHours);
-      const L = (window as any).L;
+      const overlayData = await WindyDataAdapter.generateTornadoRiskOverlay(
+        toMapBounds(leafletBounds),
+        tornadoForecastHours
+      );
+      const L = window.L;
 
       if (!L) {
         console.warn('Leaflet API not available to render tornado overlay.');
@@ -292,7 +316,7 @@
 
       const layerGroup = L.layerGroup();
 
-      overlayData.points.forEach((point) => {
+      overlayData.points.forEach((point: TornadoRiskMapPoint) => {
         const color = getRiskColor(point.riskIndex);
         const marker = L.circleMarker([point.lat, point.lon], {
           radius: Math.max(4, (point.riskIndex / 10) * 9),
@@ -323,6 +347,18 @@
     const ratio = Math.max(0, Math.min(1, riskIndex / 10));
     const hue = 120 - ratio * 120;
     return `hsl(${hue}, 85%, ${40 + ratio * 10}%)`;
+  }
+
+  function toMapBounds(bounds: LatLngBounds): MapBounds {
+    const northEast = bounds.getNorthEast();
+    const southWest = bounds.getSouthWest();
+
+    return {
+      north: northEast.lat,
+      east: northEast.lng,
+      south: southWest.lat,
+      west: southWest.lng,
+    };
   }
 
   $: cropStage = heatUnitData ?

@@ -3,7 +3,12 @@
     "target": "ES2022",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@windycom/plugin-devtools": ["src/types/@windycom__plugin-devtools/index.d.ts"],
+      "*.svelte": ["src/types/svelte/index.d.ts"]
+    },
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -24,12 +29,14 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["leaflet"]
+    "types": ["leaflet", "svelte", "@windycom__plugin-devtools"],
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": [
     "src/**/*",
     "src/**/*.ts",
-    "src/**/*.svelte"
+    "src/**/*.svelte",
+    "src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
