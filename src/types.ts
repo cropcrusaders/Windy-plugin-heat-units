@@ -31,6 +31,38 @@ export interface CalculationSettings {
   method: 'simple' | 'modified' | 'double-sine';
 }
 
+export interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+export interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+export interface HeatMapGenerationSettings {
+  crop: string;
+  baseTemp: number;
+  upperTemp: number;
+  timePeriod: number;
+  targetGdd: number;
+}
+
+export interface HeatMapPoint {
+  lat: number;
+  lon: number;
+  gdd: number;
+  intensity: number;
+}
+
+export interface HeatMapOverlayData {
+  bounds: MapBounds;
+  data: HeatMapPoint[];
+}
+
 export interface TornadoRiskTimelinePoint {
   hourOffset: number;
   riskIndex: number;
@@ -57,4 +89,15 @@ export interface TornadoRiskMapPoint {
   lon: number;
   riskIndex: number;
   probability: number;
+}
+
+export interface TornadoParameters {
+  cape: number;
+  shear: number;
+  helicity: number;
+}
+
+export interface TornadoRiskOverlayData {
+  bounds: MapBounds;
+  points: TornadoRiskMapPoint[];
 }

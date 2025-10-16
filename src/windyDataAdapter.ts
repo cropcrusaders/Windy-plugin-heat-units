@@ -1,4 +1,15 @@
-import type { HeatUnitData, TornadoRiskData, TornadoRiskMapPoint, TornadoRiskTimelinePoint } from './types';
+import type {
+  HeatMapGenerationSettings,
+  HeatMapOverlayData,
+  HeatMapPoint,
+  HeatUnitData,
+  MapBounds,
+  TornadoParameters,
+  TornadoRiskData,
+  TornadoRiskMapPoint,
+  TornadoRiskOverlayData,
+  TornadoRiskTimelinePoint,
+} from './types';
 
 export class WindyDataAdapter {
   /**
@@ -7,7 +18,7 @@ export class WindyDataAdapter {
   static async getTemperatureData(lat: number, lon: number, days: number = 30): Promise<HeatUnitData> {
     try {
       // Access Windy's picker for point data
-      const picker = (window as any).W?.picker;
+      const picker = window.W?.picker;
       if (!picker) throw new Error('Windy picker not available');
 
       // Get current weather data
@@ -45,7 +56,17 @@ export class WindyDataAdapter {
   /**
    * Generate realistic mock temperature data for demonstration
    */
-  private static generateMockTemperatureData(lat: number, lon: number, days: number) {
+  private static generateMockTemperatureData(
+    lat: number,
+    lon: number,
+    days: number
+  ): {
+    dailyGDD: number[];
+    totalGDD: number;
+    minTemps: number[];
+    maxTemps: number[];
+    avgTemp: number;
+  } {
     const now = new Date();
     const dailyGDD: number[] = [];
     const minTemps: number[] = [];
@@ -89,28 +110,36 @@ export class WindyDataAdapter {
       totalGDD,
       minTemps,
       maxTemps,
-      avgTemp: (minTemps.reduce((a, b) => a + b, 0) + maxTemps.reduce((a, b) => a + b, 0)) / (minTemps.length + maxTemps.length),
+      avgTemp:
+        (minTemps.reduce((a, b) => a + b, 0) + maxTemps.reduce((a, b) => a + b, 0)) /
+        (minTemps.length + maxTemps.length),
     };
   }
 
   /**
    * Create overlay data for map visualization
    */
-  static generateHeatMapData(bounds: any, settings: any): Promise<any> {
+  static async generateHeatMapData(
+    bounds: MapBounds,
+    settings: HeatMapGenerationSettings
+  ): Promise<HeatMapOverlayData> {
     // In a real implementation, this would:
     // 1. Request temperature data for the visible map bounds
     // 2. Calculate GDD for each grid point
     // 3. Generate a data structure suitable for Leaflet overlay
 
-    return Promise.resolve({
+    return {
       bounds,
       data: this.generateMockGridData(bounds, settings),
-    });
+    };
   }
 
-  private static generateMockGridData(bounds: any, settings: any) {
+  private static generateMockGridData(
+    bounds: MapBounds,
+    settings: HeatMapGenerationSettings
+  ): HeatMapPoint[] {
     const gridSize = 20;
-    const data = [] as Array<{lat: number, lon: number, gdd: number, intensity: number}>;
+    const data: HeatMapPoint[] = [];
 
     const latStep = (bounds.north - bounds.south) / gridSize;
     const lonStep = (bounds.east - bounds.west) / gridSize;
@@ -141,7 +170,11 @@ export class WindyDataAdapter {
     return data;
   }
 
-  static async getTornadoRiskData(lat: number, lon: number, forecastHours: number = 48): Promise<TornadoRiskData> {
+  static async getTornadoRiskData(
+    lat: number,
+    lon: number,
+    forecastHours: number = 48
+  ): Promise<TornadoRiskData> {
     try {
       const baseParameters = this.computeTornadoParameters(lat, lon);
       const riskIndex = this.calculateRiskIndex(baseParameters, forecastHours);
@@ -164,14 +197,17 @@ export class WindyDataAdapter {
     }
   }
 
-  static async generateTornadoRiskOverlay(bounds: any, forecastHours: number = 48): Promise<{bounds: any; points: TornadoRiskMapPoint[]}> {
+  static async generateTornadoRiskOverlay(
+    bounds: MapBounds,
+    forecastHours: number = 48
+  ): Promise<TornadoRiskOverlayData> {
     return {
       bounds,
       points: this.generateTornadoRiskGrid(bounds, forecastHours),
     };
   }
 
-  private static generateTornadoRiskGrid(bounds: any, forecastHours: number): TornadoRiskMapPoint[] {
+  private static generateTornadoRiskGrid(bounds: MapBounds, forecastHours: number): TornadoRiskMapPoint[] {
     const gridSize = 18;
     const latStep = (bounds.north - bounds.south) / gridSize;
     const lonStep = (bounds.east - bounds.west) / gridSize;
@@ -198,7 +234,7 @@ export class WindyDataAdapter {
     return points;
   }
 
-  private static computeTornadoParameters(lat: number, lon: number) {
+  private static computeTornadoParameters(lat: number, lon: number): TornadoParameters {
     const cape = 500 + this.pseudoRandom(lat, lon, 1) * 2500;
     const shear = 8 + Math.abs(this.pseudoRandom(lat, lon, 2)) * 45;
     const helicity = 60 + this.pseudoRandom(lat, lon, 3) * 260;
@@ -211,7 +247,7 @@ export class WindyDataAdapter {
   }
 
   private static calculateRiskIndex(
-    parameters: { cape: number; shear: number; helicity: number },
+    parameters: TornadoParameters,
     forecastHours: number,
     variance: number = 0
   ): number {
@@ -235,7 +271,7 @@ export class WindyDataAdapter {
     lat: number,
     lon: number,
     forecastHours: number,
-    parameters: { cape: number; shear: number; helicity: number }
+    parameters: TornadoParameters
   ): TornadoRiskTimelinePoint[] {
     const timeline: TornadoRiskTimelinePoint[] = [];
     const step = 3;
